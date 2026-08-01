@@ -1,0 +1,20 @@
+{
+  "name": "my-utility-css",
+  "version": "1.0.0",
+  "description": "gives you pre build sass clases",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli",
+    "dev:cli": "npm run dev --workspace=packages/cli",
+    "dev": "cd examples/vite-demo && npm run dev",
+    "test:cli": "cd examples/vite-demo && node ../../packages/cli/dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "private": "true",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ]
+}
