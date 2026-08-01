@@ -113,26 +113,100 @@ Each rule follows this pattern:
 - `mt-{n}` - Margin top
 - `mb-{n}` - Margin bottom
 
-#### Spacing Scale
+#### Spacing Scale (in rem)
 ```
-0: 0px
-1: 4px
-2: 8px
-3: 12px
-4: 16px
-5: 20px
-6: 24px
-8: 32px
-10: 40px
-12: 48px
-16: 64px
+0: 0rem
+1: 0.25rem    (4px)
+2: 0.5rem     (8px)
+3: 0.75rem    (12px)
+4: 1rem       (16px)
+5: 1.25rem    (20px)
+6: 1.5rem     (24px)
+8: 2rem       (32px)
+10: 2.5rem    (40px)
+12: 3rem      (48px)
+16: 4rem      (64px)
 ```
+
+### Flexbox Utilities
+
+#### Flex Direction
+- `row` - Horizontal flex container
+- `column` - Vertical flex container
+
+#### Flex Values
+- `flex-{n}` - Flex shorthand (n = 1-9)
+
+#### Alignment
+- `items-{start|center|end|stretch|baseline}` - Align items in cross axis
+- `justify-{start|center|end|between|around|evenly}` - Justify content in main axis
+- `content-{start|center|end|between|around|stretch}` - Align content in cross axis
+- `self-{start|center|end|stretch|baseline}` - Align individual flex item
+
+### Grid System (12-column)
+
+#### Column Width
+- `col-{n}` - Column spanning n columns (n = 1-12)
+- `col-auto` - Auto width column
+- `col-grow` - Allow column to grow
+- `col-shrink` - Allow column to shrink
+
+#### Offset & Order
+- `offset-{n}` - Offset by n columns (n = 0-11)
+- `order-{n}` - Change visual order (n = 1-12)
+
+### Display Utilities
+- `block` - Block display
+- `inline-block` - Inline-block display
+- `hidden` - Hidden element (display: none)
+
+### Text Alignment
+- `text-left` - Left aligned text
+- `text-center` - Center aligned text
+- `text-right` - Right aligned text
+- `text-justify` - Justified text
+
+### Typography Utilities
+
+#### Font Size & Weight
+- `font-{size}` - Font size in pixels converted to rem
+- `font-{size}-{weight}` - Font size and weight combined
+
+**Weight scale (second digit):**
+- 1 = 100 (Thin)
+- 2 = 200 (Extra Light)
+- 3 = 300 (Light)
+- 4 = 400 (Normal)
+- 5 = 500 (Medium)
+- 6 = 600 (Semi Bold)
+- 7 = 700 (Bold)
+- 8 = 800 (Extra Bold)
+- 9 = 900 (Black)
 
 ### Examples
 ```html
-<div class="pa-4">Padding 16px all around</div>
-<div class="mt-4 mb-2">Margin top 16px, bottom 8px</div>
+<!-- Spacing -->
+<div class="pa-4">Padding 1rem all around</div>
+<div class="mt-4 mb-2">Margin top 1rem, bottom 0.5rem</div>
 <div class="pt-8 pb-4 pl-2 pr-2">Complex padding</div>
+
+<!-- Flexbox -->
+<div class="row items-center justify-between">
+  <div class="flex-1">Item 1</div>
+  <div class="flex-2">Item 2</div>
+</div>
+
+<!-- Grid System -->
+<div class="row">
+  <div class="col-6">Half width</div>
+  <div class="col-6">Half width</div>
+</div>
+<div class="col-4 offset-2">One-third width, offset</div>
+
+<!-- Typography -->
+<div class="font-16">16px font size</div>
+<div class="font-16-6">16px font, semi-bold (600)</div>
+<div class="text-center">Centered text</div>
 ```
 
 ## 🚀 Getting Started
