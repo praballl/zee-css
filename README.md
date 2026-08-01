@@ -9,6 +9,9 @@ A TypeScript-based CSS utility library that generates CSS programmatically from 
 - **Tree-shaking**: Only generate CSS for classes you actually use
 - **CLI Tool**: Scan your project and generate CSS automatically
 - **Customizable**: Easy to extend with your own utility patterns
+- **Comprehensive Utilities**: Spacing, sizing, typography, effects, colors, and more
+- **CSS Variables**: Uses `--z-*` prefix for customizable theming
+- **Mobile-First**: Responsive design with media query support
 
 ## 📁 Project Structure
 
@@ -60,18 +63,39 @@ Each rule follows this pattern:
 
 ### Example: Adding Color Utilities
 
+The library includes built-in color utilities using CSS custom properties:
+
 ```typescript
+// Built-in color scale (exported for customization)
+export const colorScale: Record<string, string> = {
+  "primary": "var(--z-primary)",
+  "secondary": "var(--z-secondary)",
+  "accent": "var(--z-accent)",
+  "positive": "var(--z-positive)",
+  "negative": "var(--z-negative)",
+  "info": "var(--z-info)",
+  "warning": "var(--z-warning)",
+};
+
+// Text color rule
 {
   name: "text-color",
-  pattern: /^text-(red|blue|green|purple)$/,
+  pattern: /^text-(\w+)$/,
   handler: (match) => {
-    const colors = {
-      red: "#ef4444",
-      blue: "#3b82f6", 
-      green: "#22c55e",
-      purple: "#a855f7"
-    };
-    return { color: colors[match[1]] };
+    const v = resolveColor(match[1]);
+    if (!v) return null;
+    return { color: v };
+  },
+}
+
+// Background color rule
+{
+  name: "bg-color",
+  pattern: /^bg-(\w+)$/,
+  handler: (match) => {
+    const v = resolveColor(match[1]);
+    if (!v) return null;
+    return { "background-color": v };
   },
 }
 ```
@@ -102,18 +126,25 @@ Each rule follows this pattern:
 ### Spacing Utilities
 
 #### Padding
-- `pa-{n}` - Padding on all sides
-- `pt-{n}` - Padding top
-- `pb-{n}` - Padding bottom
-- `pl-{n}` - Padding left
-- `pr-{n}` - Padding right
+- `pa-{n|name}` - Padding on all sides
+- `pt-{n|name}` - Padding top
+- `pb-{n|name}` - Padding bottom
+- `pl-{n|name}` - Padding left
+- `pr-{n|name}` - Padding right
+- `px-{n|name}` - Horizontal padding (left + right)
+- `py-{n|name}` - Vertical padding (top + bottom)
 
 #### Margin
-- `ma-{n}` - Margin on all sides
-- `mt-{n}` - Margin top
-- `mb-{n}` - Margin bottom
+- `ma-{n|name|auto}` - Margin on all sides
+- `mt-{n|name|auto}` - Margin top
+- `mb-{n|name|auto}` - Margin bottom
+- `ml-{n|name|auto}` - Margin left
+- `mr-{n|name|auto}` - Margin right
+- `mx-{n|name|auto}` - Horizontal margin (left + right)
+- `my-{n|name|auto}` - Vertical margin (top + bottom)
 
 #### Spacing Scale (in rem)
+**Numeric values:**
 ```
 0: 0rem
 1: 0.25rem    (4px)
@@ -126,6 +157,24 @@ Each rule follows this pattern:
 10: 2.5rem    (40px)
 12: 3rem      (48px)
 16: 4rem      (64px)
+20: 5rem      (80px)
+24: 6rem      (96px)
+32: 8rem      (128px)
+40: 10rem     (160px)
+48: 12rem     (192px)
+64: 16rem     (256px)
+```
+
+**Descriptive names:**
+```
+xs: 0.25rem    (4px)
+sm: 0.5rem     (8px)
+md: 1rem       (16px)
+lg: 1.5rem     (24px)
+xl: 2rem       (32px)
+2xl: 2.5rem    (40px)
+3xl: 3rem      (48px)
+4xl: 4rem      (64px)
 ```
 
 ### Flexbox Utilities
@@ -142,6 +191,9 @@ Each rule follows this pattern:
 - `justify-{start|center|end|between|around|evenly}` - Justify content in main axis
 - `content-{start|center|end|between|around|stretch}` - Align content in cross axis
 - `self-{start|center|end|stretch|baseline}` - Align individual flex item
+
+#### Gap
+- `gap-{n}` - Set gap between flex/grid items (uses spacing scale)
 
 ### Grid System (12-column)
 
@@ -168,32 +220,195 @@ Each rule follows this pattern:
 
 ### Typography Utilities
 
-#### Font Size & Weight
+#### Font Size
+- `fs-{name}` - Font size using descriptive names
 - `font-{size}` - Font size in pixels converted to rem
 - `font-{size}-{weight}` - Font size and weight combined
 
-**Weight scale (second digit):**
-- 1 = 100 (Thin)
-- 2 = 200 (Extra Light)
-- 3 = 300 (Light)
-- 4 = 400 (Normal)
-- 5 = 500 (Medium)
-- 6 = 600 (Semi Bold)
-- 7 = 700 (Bold)
-- 8 = 800 (Extra Bold)
-- 9 = 900 (Black)
+**Font size scale:**
+```
+xs: 0.75rem      (12px)
+sm: 0.875rem    (14px)
+base: 1rem      (16px)
+lg: 1.125rem    (18px)
+xl: 1.25rem     (20px)
+2xl: 1.5rem     (24px)
+3xl: 1.875rem   (30px)
+4xl: 2.25rem    (36px)
+5xl: 3rem       (48px)
+6xl: 3.75rem    (60px)
+7xl: 4.5rem     (72px)
+8xl: 6rem       (96px)
+9xl: 8rem       (128px)
+```
+
+#### Font Weight
+- `font-{weight}` - Font weight using descriptive names
+- `font-{size}-{weight}` - Combined font size and weight
+
+**Font weight scale:**
+```
+thin: 100
+extralight: 200
+light: 300
+normal: 400
+medium: 500
+semibold: 600
+bold: 700
+extrabold: 800
+black: 900
+```
+
+#### Line Height
+- `leading-{name}` - Line height using descriptive names
+
+**Line height scale:**
+```
+none: 1
+tight: 1.25
+snug: 1.375
+normal: 1.5
+relaxed: 1.625
+loose: 2
+```
+
+#### Letter Spacing
+- `tracking-{name}` - Letter spacing using descriptive names
+
+**Letter spacing scale:**
+```
+tighter: -0.05em
+tight: -0.025em
+normal: 0em
+wide: 0.025em
+wider: 0.05em
+widest: 0.1em
+```
+
+#### Text Transform
+- `uppercase` - Uppercase text
+- `lowercase` - Lowercase text
+- `capitalize` - Capitalize first letter
+
+### Sizing Utilities
+
+#### Width
+- `w-{n|auto|full|screen}` - Width
+- `min-w-{n|auto|full|screen}` - Minimum width
+- `max-w-{n|auto|full|screen}` - Maximum width
+
+#### Height
+- `h-{n|auto|full|screen}` - Height
+- `min-h-{n|auto|full|screen}` - Minimum height
+- `max-h-{n|auto|full|screen}` - Maximum height
+
+**Sizing options:**
+- Numeric values (0-96) using spacing scale
+- `auto` - Automatic sizing
+- `full` - 100%
+- `screen` - 100vw/100vh
+
+### Effects Utilities
+
+#### Opacity
+- `opacity-{0-100}` - Opacity level (0, 10, 20, ..., 100)
+
+#### Box Shadow
+- `shadow` - Default shadow
+- `shadow-sm` - Small shadow
+- `shadow-md` - Medium shadow
+- `shadow-lg` - Large shadow
+- `shadow-xl` - Extra large shadow
+- `shadow-2xl` - 2XL shadow
+- `shadow-none` - No shadow
+
+#### Blur
+- `blur-{none|sm|md|lg|xl|2xl|3xl}` - Blur effect
+
+#### Filters
+- `brightness-{0-200}` - Brightness filter (0-200%)
+- `grayscale-{0|100}` - Grayscale filter (0-100%)
+
+#### Cursor
+- `cursor-auto` - Default cursor
+- `cursor-default` - Default arrow cursor
+- `cursor-pointer` - Pointer cursor
+- `cursor-wait` - Wait cursor
+- `cursor-text` - Text cursor
+- `cursor-move` - Move cursor
+- `cursor-not-allowed` - Not allowed cursor
+
+#### Overflow
+- `overflow-{auto|hidden|scroll|visible}` - Overflow behavior
+- `overflow-x-{auto|hidden|scroll|visible}` - Horizontal overflow
+- `overflow-y-{auto|hidden|scroll|visible}` - Vertical overflow
+
+#### Position
+- `relative` - Relative positioning
+- `absolute` - Absolute positioning
+- `fixed` - Fixed positioning
+- `sticky` - Sticky positioning
+
+#### Z-Index
+- `z-{0-50}` - Z-index value
+- `z-auto` - Auto z-index
+
+#### Border Radius
+- `rounded-none` - No border radius
+- `rounded-sm` - Small border radius
+- `rounded-md` - Medium border radius
+- `rounded-lg` - Large border radius
+- `rounded-xl` - Extra large border radius
+- `rounded-2xl` - 2XL border radius
+- `rounded-3xl` - 3XL border radius
+- `rounded-full` - Full/rounded border radius
+
+#### Border Width
+- `border` - Default border (1px solid)
+- `border-0` - No border
+- `border-2` - 2px border
+- `border-4` - 4px border
+- `border-8` - 8px border
+
+### Color Utilities
+
+#### Text Color
+- `text-{color}` - Set text color using CSS custom properties
+
+#### Background Color
+- `bg-{color}` - Set background color using CSS custom properties
+
+#### Border Color
+- `border-{color}` - Set border color using CSS custom properties (requires border width and style to be set separately)
+
+**Default Color Variables:**
+- `primary` - `var(--z-primary)`
+- `secondary` - `var(--z-secondary)`
+- `accent` - `var(--z-accent)`
+- `positive` - `var(--z-positive)`
+- `negative` - `var(--z-negative)`
+- `info` - `var(--z-info)`
+- `warning` - `var(--z-warning)`
 
 ### Examples
 ```html
-<!-- Spacing -->
+<!-- Advanced Spacing -->
 <div class="pa-4">Padding 1rem all around</div>
-<div class="mt-4 mb-2">Margin top 1rem, bottom 0.5rem</div>
-<div class="pt-8 pb-4 pl-2 pr-2">Complex padding</div>
+<div class="px-4 py-2">Horizontal 4, Vertical 2</div>
+<div class="mx-auto">Centered with auto margin</div>
+<div class="pa-xs">Extra small padding</div>
+<div class="pa-lg">Large padding</div>
 
 <!-- Flexbox -->
 <div class="row items-center justify-between">
   <div class="flex-1">Item 1</div>
   <div class="flex-2">Item 2</div>
+</div>
+
+<!-- Flexbox with gap -->
+<div class="row gap-4">
+  <div class="flex-1">Item 1</div>
+  <div class="flex-1">Item 2</div>
 </div>
 
 <!-- Grid System -->
@@ -204,9 +419,32 @@ Each rule follows this pattern:
 <div class="col-4 offset-2">One-third width, offset</div>
 
 <!-- Typography -->
-<div class="font-16">16px font size</div>
-<div class="font-16-6">16px font, semi-bold (600)</div>
+<div class="fs-lg">Large font size</div>
+<div class="font-bold">Bold text</div>
+<div class="leading-loose">Loose line height</div>
+<div class="tracking-wide">Wide letter spacing</div>
+<div class="uppercase">UPPERCASE TEXT</div>
 <div class="text-center">Centered text</div>
+
+<!-- Sizing -->
+<div class="w-full">Full width</div>
+<div class="h-16">Fixed height (16)</div>
+<div class="min-w-32">Min width 32</div>
+<div class="max-w-48">Max width 48</div>
+
+<!-- Effects -->
+<div class="opacity-50">50% opacity</div>
+<div class="shadow-lg">Large shadow</div>
+<div class="rounded-lg">Rounded large</div>
+<div class="rounded-full">Rounded full</div>
+<div class="cursor-pointer">Pointer cursor</div>
+<div class="overflow-hidden">Hidden overflow</div>
+
+<!-- Colors -->
+<div class="text-primary">Primary color text</div>
+<div class="bg-secondary">Secondary background</div>
+<div class="border-accent">Accent border</div>
+<div class="border-primary">Primary border</div>
 ```
 
 ## 🚀 Getting Started
@@ -291,6 +529,48 @@ The project includes a Vite-based test environment in `examples/vite-demo/`. Thi
 - **Performance**: Avoid unused CSS with tree-shaking
 
 ## 🔧 Customization
+
+### Color Customization
+
+The library uses CSS custom properties (CSS variables) with the `--z-` prefix for colors, making it easy to customize and theme.
+
+#### Define CSS Variables
+
+Add CSS variables in your stylesheet to customize colors:
+
+```css
+:root {
+  --z-primary: #1976d2;
+  --z-secondary: #26a69a;
+  --z-accent: #9c27b0;
+  --z-positive: #21ba45;
+  --z-negative: #c10015;
+  --z-info: #31ccec;
+  --z-warning: #f2c037;
+  
+  /* Add custom colors */
+  --z-brand: #your-brand-color;
+  --z-custom: #your-custom-color;
+}
+```
+
+#### Programmatic Color Customization
+
+Use the exported functions to add or override colors programmatically:
+
+```typescript
+import { addColor, setColor, colorScale } from '@my-utility-css/core';
+
+// Add custom colors
+addColor('brand', 'var(--z-brand)');
+addColor('custom-blue', '#3b82f6');
+
+// Override existing colors
+setColor('primary', 'var(--z-custom-primary)');
+
+// Access the color scale
+console.log(colorScale['primary']); // "var(--z-custom-primary)"
+```
 
 ### Modify Spacing Scale
 

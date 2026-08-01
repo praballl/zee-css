@@ -39,7 +39,7 @@ zee-css ./my-project
 
 ### What it does
 
-1. Scans the target directory for files matching: `src/**/*.{html,jsx,tsx,vue}`
+1. Scans the target directory for files matching: `src/**/*.{html,jsx,tsx,vue,ts}`
 2. Extracts all CSS class names from `class` and `className` attributes
 3. Generates CSS only for the utility classes that are actually used
 4. Writes the generated CSS to `<directory>/dist/utilities.css`
@@ -112,6 +112,7 @@ The CLI generates a CSS file with only the utility classes used in your project:
 - `.jsx` files
 - `.tsx` files
 - `.vue` files
+- `.ts` files
 
 ## License
 

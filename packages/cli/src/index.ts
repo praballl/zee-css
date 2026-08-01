@@ -6,21 +6,21 @@ import { generateCSS } from "@my-utility-css/core";
 
 const VERSION = "1.0.0";
 
-const CLASS_REGEX = /class(Name)?=["']([^"']+)["']/g;
-
 function scanFiles(patterns: string[]): Set<string> {
   const found = new Set<string>();
 
   const files = patterns.flatMap((pattern) =>
-    glob.sync(pattern, { ignore: "**/node_modules/**" })
+    glob.sync(pattern, { ignore: "**/node_modules/**", windowsPathsNoEscape: true })
   );
 
   for (const file of files) {
     const content = fs.readFileSync(file, "utf-8");
     let match: RegExpExecArray | null;
 
-    while ((match = CLASS_REGEX.exec(content)) !== null) {
-      const classList = match[2].split(/\s+/);
+    // Scan for both class and className attributes
+    const classRegex = /class(?:Name)?=["']([^"']+)["']/g;
+    while ((match = classRegex.exec(content)) !== null) {
+      const classList = match[1].split(/\s+/);
       classList.forEach((cls) => found.add(cls));
     }
   }
@@ -44,7 +44,7 @@ EXAMPLES:
   zee-css ./src             # Scan src directory
   zee-css ./my-project      # Scan specific project
 
-The tool scans for files matching: src/**/*.{html,jsx,tsx,vue}
+The tool scans for files matching: src/**/*.{html,jsx,tsx,vue,ts}
 Output is written to: <directory>/dist/utilities.css
 
 For more information, visit: https://github.com/praballl/zee-css
@@ -69,7 +69,7 @@ function run() {
 
   // Get target directory from command line args, default to current directory
   const targetDir = args[0] || process.cwd();
-  const patterns = [path.join(targetDir, "src/**/*.{html,jsx,tsx,vue}")];
+  const patterns = [path.join(targetDir, "src", "**", "*.{html,jsx,tsx,vue,ts}")];
   const outputPath = path.resolve(targetDir, "dist/utilities.css");
 
   console.log(`zee-css v${VERSION}`);

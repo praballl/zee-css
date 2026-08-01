@@ -7,7 +7,7 @@ export interface GeneratedRule {
 
 function toCSSString(className: string, decl: CSSDeclaration): string {
   const body = Object.entries(decl)
-    .map(([prop, value]) => `  ${prop}: ${value};`)
+    .map(([prop, value]) => `  ${prop}: ${value} !important;`)
     .join("\n");
 
   // escape characters like ":" in "md:pa-10" so it's valid CSS selector

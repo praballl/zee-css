@@ -4,6 +4,16 @@
   box-sizing: border-box;
 }
 
+:root {
+  --z-primary: #1976d2;
+  --z-secondary: #26a69a;
+  --z-accent: #9c27b0;
+  --z-positive: #21ba45;
+  --z-negative: #c10015;
+  --z-info: #31ccec;
+  --z-warning: #f2c037;
+}
+
 body {
   font-family: system-ui, -apple-system, sans-serif;
   background-color: #f5f5f5;
@@ -14,6 +24,33 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .section {
+    padding: 1rem;
+  }
+  
+  .demo-box {
+    padding: 1rem;
+  }
+  
+  .test-box {
+    padding: 0.75rem;
+  }
+  
+  .row, .column {
+    flex-wrap: wrap;
+  }
+  
+  .flex-1 {
+    flex: 1 1 100%;
+  }
 }
 
 .header {
@@ -59,11 +96,32 @@ body {
 }
 
 .test-box {
-  background: #e0e7ff;
-  border: 2px solid #6366f1;
   border-radius: 4px;
   padding: 1rem;
   margin-bottom: 1rem;
-  color: #1e1b4b;
   font-weight: 500;
+  /* Default styles for non-colored test boxes */
+  background: #e0e7ff;
+  border: 2px solid #6366f1;
+  color: #1e1b4b;
+}
+
+/* Ensure border color utilities work properly */
+[class*="border-"] {
+  border-width: 2px;
+  border-style: solid;
+}
+
+/* Ensure demo containers with gap work properly */
+.row, .column {
+  display: flex;
+}
+
+/* Make sure utility classes override default test-box styles */
+.test-box[class*="text-"] {
+  color: var(--z-primary);
+}
+
+.test-box[class*="bg-"] {
+  background-color: var(--z-secondary);
 }
