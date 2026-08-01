@@ -213,7 +213,26 @@ Each rule follows this pattern:
 
 ### Installation
 
+#### As npm packages
+
 ```bash
+# Install the core library
+npm install @my-utility-css/core
+
+# Install the CLI tool globally
+npm install -g @my-utility-css/cli
+
+# Or use with npx
+npx @my-utility-css/cli
+```
+
+#### Development setup
+
+```bash
+# Clone the repository
+git clone https://github.com/praballl/zee-css.git
+cd zee-css
+
 # Install dependencies
 npm install
 
@@ -314,3 +333,48 @@ ISC
 ## 🤝 Contributing
 
 This is a personal utility CSS library. Feel free to fork and customize for your own projects!
+
+## 📦 Publishing to npm
+
+### Prerequisites
+
+1. **Create an npm account**: https://www.npmjs.com/signup
+2. **Login to npm**: `npm login`
+
+### Publishing
+
+#### Publish the core package
+
+```bash
+cd packages/core
+npm publish
+```
+
+#### Publish the CLI package
+
+```bash
+cd packages/cli
+npm publish
+```
+
+### Publishing workflow
+
+1. Update version numbers in `package.json` files
+2. Build the packages: `npm run build`
+3. Publish from each package directory
+4. Tag the release in git
+
+### Version management
+
+Use semantic versioning (MAJOR.MINOR.PATCH):
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backwards compatible)
+- **PATCH**: Bug fixes
+
+Example:
+```bash
+# Update version to 1.1.0
+npm version minor
+npm publish
+git push --tags
+```
