@@ -1,4 +1,4 @@
-# My Utility CSS
+# Zee CSS
 
 A TypeScript-based CSS utility library that generates CSS programmatically from utility class patterns. Similar to Tailwind CSS but with a custom rule system built in TypeScript.
 
@@ -16,7 +16,7 @@ A TypeScript-based CSS utility library that generates CSS programmatically from 
 ## 📁 Project Structure
 
 ```
-my-utility-css/
+zee-css/
 ├── packages/
 │   ├── core/           # Core CSS generation logic
 │   │   └── src/
@@ -455,13 +455,13 @@ widest: 0.1em
 
 ```bash
 # Install the core library
-npm install @my-utility-css/core
+npm install @zee-css/core
 
 # Install the CLI tool globally
-npm install -g @my-utility-css/cli
+npm install -g @zee-css/cli
 
 # Or use with npx
-npx @my-utility-css/cli
+npx @zee-css/cli
 ```
 
 #### Development setup
@@ -559,7 +559,7 @@ Add CSS variables in your stylesheet to customize colors:
 Use the exported functions to add or override colors programmatically:
 
 ```typescript
-import { addColor, setColor, colorScale } from '@my-utility-css/core';
+import { addColor, setColor, colorScale } from '@zee-css/core';
 
 // Add custom colors
 addColor('brand', 'var(--z-brand)');

@@ -1,11 +1,11 @@
-# @my-utility-css/core
+# @zee-css/core
 
 A TypeScript-based CSS utility library that generates CSS programmatically from utility class patterns. Similar to Tailwind CSS but with a custom rule system built in TypeScript.
 
 ## Installation
 
 ```bash
-npm install @my-utility-css/core
+npm install @zee-css/core
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install @my-utility-css/core
 ### Programmatic Usage
 
 ```typescript
-import { generateCSS, generateCSSForClass } from '@my-utility-css/core';
+import { generateCSS, generateCSSForClass } from '@zee-css/core';
 
 // Generate CSS for a single class
 const result = generateCSSForClass('pa-4');
@@ -182,7 +182,7 @@ if (result) {
 Array of all available rules. You can inspect or extend this array.
 
 ```typescript
-import { rules } from '@my-utility-css/core';
+import { rules } from '@zee-css/core';
 
 console.log(rules.map(r => r.name));
 // ['padding-all', 'padding-top', 'padding-bottom', ...]
@@ -193,7 +193,7 @@ console.log(rules.map(r => r.name));
 Object containing all available color mappings using CSS custom properties.
 
 ```typescript
-import { colorScale } from '@my-utility-css/core';
+import { colorScale } from '@zee-css/core';
 
 console.log(colorScale['primary']); // 'var(--z-primary)'
 ```
@@ -203,7 +203,7 @@ console.log(colorScale['primary']); // 'var(--z-primary)'
 Function to resolve color names to CSS variable values.
 
 ```typescript
-import { resolveColor } from '@my-utility-css/core';
+import { resolveColor } from '@zee-css/core';
 
 const color = resolveColor('primary'); // 'var(--z-primary)'
 ```
@@ -213,7 +213,7 @@ const color = resolveColor('primary'); // 'var(--z-primary)'
 Function to add custom colors to the color scale.
 
 ```typescript
-import { addColor } from '@my-utility-css/core';
+import { addColor } from '@zee-css/core';
 
 addColor('brand', 'var(--z-brand)');
 ```
@@ -223,7 +223,7 @@ addColor('brand', 'var(--z-brand)');
 Function to override existing colors in the color scale.
 
 ```typescript
-import { setColor } from '@my-utility-css/core';
+import { setColor } from '@zee-css/core';
 
 setColor('primary', 'var(--z-custom-primary)');
 ```

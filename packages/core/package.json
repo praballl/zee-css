@@ -1,5 +1,5 @@
 {
-  "name": "@my-utility-css/core",
+  "name": "@zee-css/core",
   "version": "1.0.0",
   "description": "A TypeScript-based CSS utility library that generates CSS programmatically from utility class patterns",
   "main": "dist/index.js",
@@ -21,7 +21,8 @@
     "tailwind",
     "css-in-js",
     "programmable-css",
-    "typescript"
+    "typescript",
+    "zee-css"
   ],
   "author": "praballl",
   "license": "ISC",

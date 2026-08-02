@@ -1,17 +1,17 @@
-# @my-utility-css/cli
+# @zee-css/cli
 
-CLI tool for my-utility-css - scans your project and generates CSS from utility class usage.
+CLI tool for zee-css - scans your project and generates CSS from utility class usage.
 
 ## Installation
 
 ```bash
-npm install -g @my-utility-css/cli
+npm install -g @zee-css/cli
 ```
 
 Or use with npx:
 
 ```bash
-npx @my-utility-css/cli
+npx @zee-css/cli
 ```
 
 ## Usage
@@ -57,7 +57,7 @@ zee-css -v           # Show version (short)
 
 1. Install the CLI:
    ```bash
-   npm install -g @my-utility-css/cli
+   npm install -g @zee-css/cli
    ```
 
 2. Use utility classes in your project:
@@ -124,4 +124,4 @@ https://github.com/praballl/zee-css
 
 ## Related Packages
 
-- [@my-utility-css/core](https://www.npmjs.com/package/@my-utility-css/core) - Core CSS generation library
+- [@zee-css/core](https://www.npmjs.com/package/@zee-css/core) - Core CSS generation library

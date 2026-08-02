@@ -2,7 +2,7 @@
 import { glob } from "glob";
 import fs from "fs";
 import path from "path";
-import { generateCSS } from "@my-utility-css/core";
+import { generateCSS } from "../../core/src/index";
 
 const VERSION = "1.0.0";
 
@@ -31,7 +31,7 @@ function scanFiles(patterns: string[]): Set<string> {
 function showHelp() {
   console.log(`
 zee-css v${VERSION}
-A CLI tool for my-utility-css - generates CSS from utility class usage
+A CLI tool for zee-css - generates CSS from utility class usage
 
 USAGE:
   zee-css [directory]

@@ -1,7 +1,7 @@
 {
-  "name": "my-utility-css",
+  "name": "zee-css",
   "version": "1.0.0",
-  "description": "gives you pre build sass clases",
+  "description": "A TypeScript-based CSS utility library with comprehensive theming support",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
