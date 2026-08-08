@@ -1,19 +1,76 @@
 {
-  "name": "@my-utility-css/core",
+  "name": "@zee-css/core",
   "version": "1.0.0",
-  "description": "",
+  "description": "A TypeScript-based CSS utility library that generates CSS programmatically from utility class patterns — like Tailwind CSS but fully programmable",
   "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./rules": {
+      "types": "./dist/rules.d.ts",
+      "import": "./dist/rules.js",
+      "require": "./dist/rules.js"
+    },
+    "./generator": {
+      "types": "./dist/generator.d.ts",
+      "import": "./dist/generator.js",
+      "require": "./dist/generator.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('./dist',{recursive:true,force:true})\"",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "css",
+    "utility-css",
+    "utility-classes",
+    "tailwind",
+    "tailwind-alternative",
+    "css-utilities",
+    "css-in-js",
+    "css-generator",
+    "programmable-css",
+    "typescript",
+    "responsive",
+    "hover",
+    "zee-css"
+  ],
+  "author": "praballl",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/praballl/zee-css.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/praballl/zee-css#readme",
+  "bugs": {
+    "url": "https://github.com/praballl/zee-css/issues"
+  },
   "devDependencies": {
     "@types/node": "^26.1.2",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^2.1.9"
   }
 }

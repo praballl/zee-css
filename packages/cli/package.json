@@ -1,18 +1,58 @@
 {
-  "name": "@my-utility-css/cli",
+  "name": "@zee-css/cli",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI tool for zee-css — scans your project and generates CSS from utility class usage with watch mode, minification, and responsive variant support",
   "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "dev": "tsx watch src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "types": "dist/index.d.ts",
   "bin": {
-    "myutil": "dist/index.js"
+    "zee-css": "dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "clean": "node -e \"const fs=require('fs');fs.rmSync('./dist',{recursive:true,force:true})\"",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "css",
+    "utility-css",
+    "cli",
+    "css-generator",
+    "tailwind-alternative",
+    "zee-css",
+    "watch-mode",
+    "responsive"
+  ],
+  "author": "praballl",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/praballl/zee-css.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/praballl/zee-css#readme",
+  "bugs": {
+    "url": "https://github.com/praballl/zee-css/issues"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
@@ -20,7 +60,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@my-utility-css/core": "^1.0.0",
+    "@zee-css/core": "^1.0.0",
     "glob": "^13.0.6"
   }
 }

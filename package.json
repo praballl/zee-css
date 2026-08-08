@@ -1,20 +1,29 @@
 {
-  "name": "my-utility-css",
+  "name": "zee-css",
   "version": "1.0.0",
-  "description": "gives you pre build sass clases",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli",
-    "dev:cli": "npm run dev --workspace=packages/cli",
-    "dev": "cd examples/vite-demo && npm run dev",
-    "test:cli": "cd examples/vite-demo && node ../../packages/cli/dist/index.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "private": "true",
+  "description": "A TypeScript-based CSS utility library with comprehensive theming, responsive variants, and state variants",
+  "private": true,
   "workspaces": [
     "packages/*",
     "examples/*"
-  ]
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=packages/core && npm run build --workspace=packages/cli",
+    "build:core": "npm run build --workspace=packages/core",
+    "build:cli": "npm run build --workspace=packages/cli",
+    "clean": "npm run clean --workspace=packages/core && npm run clean --workspace=packages/cli",
+    "dev": "cd examples/vite-demo && npm run dev",
+    "dev:cli": "npm run dev --workspace=packages/cli",
+    "test:cli": "cd examples/vite-demo && node ../../packages/cli/dist/index.js",
+    "publish:core": "cd packages/core && npm publish --access public",
+    "publish:cli": "cd packages/cli && npm publish --access public",
+    "publish:all": "npm run build && npm run publish:core && npm run publish:cli",
+    "version:patch": "npm version patch --workspace=packages/core --workspace=packages/cli --no-git-tag-version",
+    "version:minor": "npm version minor --workspace=packages/core --workspace=packages/cli --no-git-tag-version",
+    "version:major": "npm version major --workspace=packages/core --workspace=packages/cli --no-git-tag-version",
+    "pack:dry": "cd packages/core && npm pack --dry-run && cd ../cli && npm pack --dry-run",
+    "test": "npm run test --workspace=packages/core"
+  },
+  "author": "praballl",
+  "license": "ISC"
 }

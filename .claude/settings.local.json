@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\praba\\\\OneDrive\\\\Desktop\\\\zee-css\\\\packages\\\\core\\\\src\\\\rules\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\praba\\\\OneDrive\\\\Desktop\\\\zee-css\\\\packages\\\\core\\\\src\\\\__tests__\")",
+      "Bash(npm run:*)",
+      "Bash(npx vitest:*)",
+      "Bash(node ../../packages/cli/dist/index.js . --output dist/utilities.css)",
+      "Bash(npm test:*)"
+    ]
+  }
+}
