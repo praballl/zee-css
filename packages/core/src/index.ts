@@ -3,9 +3,9 @@
 // ──────────────────────────────────────────────
 
 // Rule system
-export { rules, colorScale, resolveColor, addColor, setColor } from "./rules";
-export { resolveSpacing, resolveSizing } from "./rules";
-export type { Rule, RuleHandler, CSSDeclaration } from "./rules";
+export { rules, colorScale, resolveColor, addColor, setColor } from "./rules/index";
+export { resolveSpacing, resolveSizing } from "./rules/index";
+export type { Rule, RuleHandler, CSSDeclaration } from "./rules/types";
 
 // Scales (for inspection and extension)
 export {
@@ -21,7 +21,7 @@ export {
   borderRadiusScale,
   breakpoints,
   stateVariants,
-} from "./rules";
+} from "./rules/index";
 
 // Generator
 export { generateCSS, generateCSSForClass, clearCache } from "./generator";

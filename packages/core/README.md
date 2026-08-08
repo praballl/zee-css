@@ -1,237 +1,145 @@
 # @zee-css/core
 
-A TypeScript-based CSS utility library that generates CSS programmatically from utility class patterns. Similar to Tailwind CSS but with a custom rule system built in TypeScript.
+TypeScript-first utility CSS generation engine — zero runtime dependencies, O(1) memoized lookups, 500+ utility rules, full Tailwind color palette.
 
-## Installation
+---
+
+## Install
 
 ```bash
 npm install @zee-css/core
 ```
 
-## Usage
+---
 
-### Programmatic Usage
+## What's included
 
-```typescript
-import { generateCSS, generateCSSForClass } from '@zee-css/core';
+### Rule modules
 
-// Generate CSS for a single class
-const result = generateCSSForClass('pa-4');
-console.log(result.css);
-// Output:
-// .pa-4 {
-//   padding: 1rem;
-// }
+| Module | Utilities |
+|--------|-----------|
+| `spacing` | `pa-*`, `pt-*`, `mx-*`, `-mt-*`, `space-x-*`, `space-y-*`, `ps-*`, `pe-*`, `ms-*`, `me-*` |
+| `flexbox` | `row`, `column`, `flex-wrap`, `items-*`, `justify-*`, `self-*`, `place-*` |
+| `grid` | `grid-cols-*`, `col-span-*`, `row-span-*`, `grid-flow-*`, `auto-cols-*`, `gap-*` |
+| `layout` | `flex`, `grid`, `hidden`, `table-*`, `container`, `w-*`, `h-*`, `absolute`, `z-*`, `overflow-*`, `float-*`, `fit`, `isolate`, `columns-*` |
+| `typography` | `text-h1`…`text-h6`, `text-body1/2`, `text-subtitle1/2`, `text-caption`, `text-overline`, `fs-*`, `font-*`, `leading-*`, `tracking-*`, `align-top/middle/bottom` |
+| `backgrounds` | `bg-cover`, `bg-center`, `bg-clip-text`, `bg-fixed`, `bg-gradient-to-*`, `from-*`, `via-*`, `to-*`, `bg-{color}` |
+| `effects` | `shadow-*`, `ring`, `ring-*`, `blur-*`, `brightness-*`, `contrast-*`, `saturate-*`, `grayscale`, `sepia`, `invert`, `hue-rotate-*`, `backdrop-blur-*`, `border-*`, `rounded-*`, `divide-*`, `outline-*`, `mix-blend-*` |
+| `transforms` | `scale-*`, `rotate-*`, `translate-x/y-*`, `skew-*`, `transition-*`, `duration-*`, `delay-*`, `ease-*`, `animate-spin/ping/pulse/bounce`, `will-change-*` |
+| `interactivity` | `cursor-*`, `select-*`, `scroll-smooth`, `snap-*`, `touch-*`, `resize-*`, `accent-*`, `caret-*`, `fill-*`, `stroke-*`, `sr-only` |
+| **colors** | 242 colors — 22 families × 11 shades (full Tailwind palette) |
 
-// Generate CSS for multiple classes
-const classNames = ['pa-4', 'mt-2', 'flex-1', 'text-center'];
-const css = generateCSS(classNames);
-console.log(css);
-```
+### Generator features
 
-### Available Utility Classes
+- **Responsive variants**: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- **State variants**: `hover:`, `focus:`, `active:`, `disabled:`, `first:`, `last:`, `odd:`, `even:`, `placeholder:`
+- **Dark mode**: `dark:` (prefers-color-scheme media or `.dark` class)
+- **Media variants**: `print:`, `motion-safe:`, `motion-reduce:`, `contrast-more:`, `contrast-less:`
+- **Per-class important**: `!pa-4` → `padding: 1rem !important`
+- **Arbitrary values**: `w-[200px]`, `text-[#ff0000]`, `p-[13px]`
+- **Child selectors**: `space-x-*`, `divide-*` use `> * + *` selectors
+- **Keyframes**: Animation rules include `@keyframes` in output
+- **O(1) cache**: Results memoized per class + options combination
 
-#### Spacing Utilities
-- `pa-{n|name}` - Padding on all sides
-- `pt-{n|name}` - Padding top
-- `pb-{n|name}` - Padding bottom
-- `pl-{n|name}` - Padding left
-- `pr-{n|name}` - Padding right
-- `px-{n|name}` - Horizontal padding (left + right)
-- `py-{n|name}` - Vertical padding (top + bottom)
-- `ma-{n|name|auto}` - Margin on all sides
-- `mt-{n|name|auto}` - Margin top
-- `mb-{n|name|auto}` - Margin bottom
-- `ml-{n|name|auto}` - Margin left
-- `mr-{n|name|auto}` - Margin right
-- `mx-{n|name|auto}` - Horizontal margin (left + right)
-- `my-{n|name|auto}` - Vertical margin (top + bottom)
-
-#### Flexbox Utilities
-- `row` / `column` - Flex direction
-- `flex-{n}` - Flex values (1-9)
-- `items-{start|center|end|stretch|baseline}` - Align items
-- `justify-{start|center|end|between|around|evenly}` - Justify content
-- `content-{start|center|end|between|around|stretch}` - Align content
-- `self-{start|center|end|stretch|baseline}` - Align self
-- `gap-{n|name}` - Gap between flex/grid items
-
-#### Grid System (12-column)
-- `col-{n}` - Column spanning n columns (1-12)
-- `col-auto` - Auto width column
-- `col-grow` - Allow column to grow
-- `col-shrink` - Allow column to shrink
-- `offset-{n}` - Offset by n columns (0-11)
-- `order-{n}` - Change visual order (1-12)
-
-#### Display Utilities
-- `block` - Block display
-- `inline-block` - Inline-block display
-- `hidden` - Hidden element
-
-#### Text Alignment
-- `text-left` - Left aligned text
-- `text-center` - Center aligned text
-- `text-right` - Right aligned text
-- `text-justify` - Justified text
-
-#### Typography Utilities
-- `fs-{name}` - Font size using descriptive names (xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl, 8xl, 9xl)
-- `font-{size}` - Font size in pixels converted to rem
-- `font-{size}-{weight}` - Font size and weight combined
-- `font-{weight}` - Font weight (thin, extralight, light, normal, medium, semibold, bold, extrabold, black)
-- `leading-{name}` - Line height (none, tight, snug, normal, relaxed, loose)
-- `tracking-{name}` - Letter spacing (tighter, tight, normal, wide, wider, widest)
-- `uppercase` / `lowercase` / `capitalize` - Text transform
-
-#### Sizing Utilities
-- `w-{n|auto|full|screen}` - Width
-- `h-{n|auto|full|screen}` - Height
-- `min-w-{n|auto|full|screen}` - Minimum width
-- `max-w-{n|auto|full|screen}` - Maximum width
-- `min-h-{n|auto|full|screen}` - Minimum height
-- `max-h-{n|auto|full|screen}` - Maximum height
-
-#### Effects Utilities
-- `opacity-{0-100}` - Opacity level
-- `shadow` / `shadow-sm` / `shadow-md` / `shadow-lg` / `shadow-xl` / `shadow-2xl` / `shadow-none` - Box shadow
-- `blur-{none|sm|md|lg|xl|2xl|3xl}` - Blur effect
-- `brightness-{0-200}` - Brightness filter
-- `grayscale-{0|100}` - Grayscale filter
-- `cursor-{auto|default|pointer|wait|text|move|not-allowed}` - Cursor style
-- `overflow-{auto|hidden|scroll|visible}` - Overflow behavior
-- `overflow-x-{auto|hidden|scroll|visible}` - Horizontal overflow
-- `overflow-y-{auto|hidden|scroll|visible}` - Vertical overflow
-
-#### Position & Layout
-- `relative` / `absolute` / `fixed` / `sticky` - Positioning
-- `z-{0-50}` / `z-auto` - Z-index
-
-#### Border Utilities
-- `rounded-{none|sm|md|lg|xl|2xl|3xl|full}` - Border radius
-- `border` / `border-0` / `border-2` / `border-4` / `border-8` - Border width
-
-#### Color Utilities
-- `text-{color}` - Text color using CSS custom properties
-- `bg-{color}` - Background color using CSS custom properties
-- `border-{color}` - Border color using CSS custom properties
-
-**Available colors:** primary, secondary, accent, positive, negative, info, warning
-
-## Spacing Scale
-
-The spacing scale uses rem units (1rem = 16px):
-
-**Numeric values:**
-```
-0: 0rem
-1: 0.25rem    (4px)
-2: 0.5rem     (8px)
-3: 0.75rem    (12px)
-4: 1rem       (16px)
-5: 1.25rem    (20px)
-6: 1.5rem     (24px)
-8: 2rem       (32px)
-10: 2.5rem    (40px)
-12: 3rem      (48px)
-16: 4rem      (64px)
-20: 5rem      (80px)
-24: 6rem      (96px)
-32: 8rem      (128px)
-40: 10rem     (160px)
-48: 12rem     (192px)
-64: 16rem     (256px)
-```
-
-**Descriptive names:**
-```
-xs: 0.25rem    (4px)
-sm: 0.5rem     (8px)
-md: 1rem       (16px)
-lg: 1.5rem     (24px)
-xl: 2rem       (32px)
-2xl: 2.5rem    (40px)
-3xl: 3rem      (48px)
-4xl: 4rem      (64px)
-```
+---
 
 ## API
 
-### `generateCSS(classNames: Set<string> | string[]): string`
+### `generateCSSForClass(className, options?)`
 
-Generates CSS for an array or set of class names.
+Generate CSS for a single utility class name.
 
 ```typescript
-const css = generateCSS(['pa-4', 'mt-2']);
+import { generateCSSForClass } from "@zee-css/core";
+
+const result = generateCSSForClass("hover:bg-blue-500");
+// result.className === "hover:bg-blue-500"
+// result.css === ".hover\\:bg-blue-500:hover {\n  background-color: #3b82f6;\n}"
+
+// With options
+generateCSSForClass("dark:pa-4", { darkMode: "class", minify: true });
+// ".dark .dark\\:pa-4{padding:1rem}"
+
+// Arbitrary values
+generateCSSForClass("w-[200px]");
+// ".w-\\[200px\\] {\n  width: 200px;\n}"
+
+// Per-class important
+generateCSSForClass("!pa-4");
+// ".\\!pa-4 {\n  padding: 1rem !important;\n}"
 ```
 
-### `generateCSSForClass(className: string): GeneratedRule | null`
+### `generateCSS(classNames, options?)`
 
-Generates CSS for a single class name. Returns null if the class doesn't match any rules.
+Generate CSS for a collection of class names. Deduplicates, groups responsive rules by breakpoint, collects `@keyframes`.
 
 ```typescript
-const result = generateCSSForClass('pa-4');
-if (result) {
-  console.log(result.className); // 'pa-4'
-  console.log(result.css);      // '.pa-4 { padding: 1rem; }'
+import { generateCSS } from "@zee-css/core";
+
+const css = generateCSS(
+  new Set(["pa-4", "md:pa-8", "hover:bg-blue-500", "animate-spin"]),
+  { minify: false, darkMode: "media" }
+);
+```
+
+### `GeneratorOptions`
+
+```typescript
+interface GeneratorOptions {
+  important?: boolean;            // Add !important to ALL declarations
+  prefix?: string;                // Namespace selectors (e.g. "z-" → .z-pa-4)
+  minify?: boolean;               // Single-line output
+  darkMode?: "media" | "class";  // dark: variant strategy
 }
 ```
 
-### `rules: Rule[]`
-
-Array of all available rules. You can inspect or extend this array.
+### Color management
 
 ```typescript
-import { rules } from '@zee-css/core';
+import { addColor, setColor, clearCache, resolveColor } from "@zee-css/core";
 
-console.log(rules.map(r => r.name));
-// ['padding-all', 'padding-top', 'padding-bottom', ...]
+addColor("brand", "#6366f1");           // Add new color
+setColor("primary", "#ec4899");         // Override existing color
+clearCache();                            // Invalidate after color changes
+
+const value = resolveColor("blue-500"); // "#3b82f6"
 ```
 
-### `colorScale: Record<string, string>`
-
-Object containing all available color mappings using CSS custom properties.
+### Scales & breakpoints
 
 ```typescript
-import { colorScale } from '@zee-css/core';
-
-console.log(colorScale['primary']); // 'var(--z-primary)'
+import {
+  spacingScale, colorScale, fontSizeScale, fontWeightScale,
+  blurScale, shadowScale, borderRadiusScale,
+  breakpoints, stateVariants,
+  resolveSpacing, resolveSizing,
+} from "@zee-css/core";
 ```
 
-### `resolveColor(key: string): string | null`
+---
 
-Function to resolve color names to CSS variable values.
+## Package exports
 
-```typescript
-import { resolveColor } from '@zee-css/core';
-
-const color = resolveColor('primary'); // 'var(--z-primary)'
+```json
+{
+  ".":           "@zee-css/core main API",
+  "./rules":     "Rule definitions, scales & color palette",
+  "./generator": "CSS generator"
+}
 ```
 
-### `addColor(name: string, value: string): void`
+---
 
-Function to add custom colors to the color scale.
+## Running tests
 
-```typescript
-import { addColor } from '@zee-css/core';
-
-addColor('brand', 'var(--z-brand)');
+```bash
+npm test
 ```
 
-### `setColor(name: string, value: string): void`
+59 tests covering every rule category, variant system, arbitrary values, dark mode, animations, and keyframes.
 
-Function to override existing colors in the color scale.
-
-```typescript
-import { setColor } from '@zee-css/core';
-
-setColor('primary', 'var(--z-custom-primary)');
-```
+---
 
 ## License
 
-ISC
-
-## Repository
-
-https://github.com/praballl/zee-css
+ISC © [praballl](https://github.com/praballl)
