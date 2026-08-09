@@ -8,9 +8,10 @@ export type { CSSDeclaration, RuleHandler, Rule } from "./types";
 // Scales & utilities
 export {
   spacingScale, spacingNames, resolveSpacing, resolveSizing,
-  fontSizeScale, fontWeightScale, lineHeightScale, letterSpacingScale,
+  fontSizeScale, fluidFontScale, fontWeightScale, lineHeightScale, letterSpacingScale,
   opacityScale, shadowScale, blurScale, borderRadiusScale,
   alignKeywordMap, breakpoints, stateVariants,
+  setBreakpoint, addBreakpoint,
   SP, SP_AUTO, resolveColumnWidth, pxToRem,
 } from "./scales";
 

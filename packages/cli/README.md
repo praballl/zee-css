@@ -39,6 +39,9 @@ npx zee-css ./src --important
 
 # Prefix all class selectors (e.g., .z-pa-4 instead of .pa-4)
 npx zee-css ./src --prefix z-
+
+# Fluid typography — font sizes scale automatically with viewport width
+npx zee-css ./src --auto-responsive
 ```
 
 ---
@@ -52,6 +55,7 @@ npx zee-css ./src --prefix z-
 | `--minify` | `-m` | Single-line minified output | `false` |
 | `--important` | | Add `!important` to all declarations | `false` |
 | `--prefix <p>` | | Namespace class selectors | `""` |
+| `--auto-responsive` | | Fluid `clamp()` font sizes — scales from mobile floor to desktop cap automatically | `false` |
 | `--help` | `-h` | Show help | |
 | `--version` | `-v` | Show version | |
 
@@ -108,6 +112,24 @@ The CLI prints a summary after each build:
   <link rel="stylesheet" href="/dist/utilities.css" />
 </head>
 ```
+
+---
+
+## Custom breakpoints
+
+Breakpoints are configured via the `@zee-css/core` API before running the CLI programmatically, or by importing and calling the helpers directly:
+
+```typescript
+import { setBreakpoint, addBreakpoint, clearCache } from "@zee-css/core";
+
+setBreakpoint('md', '900px');   // override default 768px
+addBreakpoint('3xl', '1920px'); // add new breakpoint
+clearCache();
+
+// then call generateCSS / buildCSS as normal
+```
+
+See the [`@zee-css/core` README](../core/README.md) for the full breakpoint management API.
 
 ---
 

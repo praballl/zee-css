@@ -5,6 +5,7 @@
 // Rule system
 export { rules, colorScale, resolveColor, addColor, setColor } from "./rules/index";
 export { resolveSpacing, resolveSizing } from "./rules/index";
+export { setBreakpoint, addBreakpoint } from "./rules/index";
 export type { Rule, RuleHandler, CSSDeclaration } from "./rules/types";
 
 // Scales (for inspection and extension)
@@ -12,6 +13,7 @@ export {
   spacingScale,
   spacingNames,
   fontSizeScale,
+  fluidFontScale,
   fontWeightScale,
   lineHeightScale,
   letterSpacingScale,
