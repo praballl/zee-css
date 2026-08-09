@@ -37,6 +37,7 @@ npm install @zee-css/core
 - **Media variants**: `print:`, `motion-safe:`, `motion-reduce:`, `contrast-more:`, `contrast-less:`
 - **Per-class important**: `!pa-4` → `padding: 1rem !important`
 - **Arbitrary values**: `w-[200px]`, `text-[#ff0000]`, `p-[13px]`
+- **Auto-responsive typography**: `autoResponsive: true` replaces all `font-size` values with fluid `clamp()` — scales from a mobile floor to the desktop target without any breakpoints
 - **Child selectors**: `space-x-*`, `divide-*` use `> * + *` selectors
 - **Keyframes**: Animation rules include `@keyframes` in output
 - **O(1) cache**: Results memoized per class + options combination
@@ -90,7 +91,33 @@ interface GeneratorOptions {
   prefix?: string;                // Namespace selectors (e.g. "z-" → .z-pa-4)
   minify?: boolean;               // Single-line output
   darkMode?: "media" | "class";  // dark: variant strategy
+  autoResponsive?: boolean;       // Fluid clamp() font sizes (see below)
 }
+```
+
+### Auto-responsive typography
+
+When `autoResponsive: true`, every `font-size` declaration is replaced with a CSS `clamp()` value that scales smoothly with viewport width — no manual `sm:` / `md:` overrides needed.
+
+```typescript
+generateCSSForClass("fs-base", { autoResponsive: true });
+// .fs-base { font-size: clamp(0.875rem, 2vw, 1rem); }
+//                              ↑ mobile floor  ↑ fluid mid  ↑ desktop cap
+
+generateCSSForClass("text-h1", { autoResponsive: true });
+// .text-h1 { font-size: clamp(4rem, 12vw, 6rem); ... }
+
+generateCSSForClass("font-14", { autoResponsive: true });
+// .font-14 { font-size: clamp(0.75rem, 1.75vw, 0.875rem); }
+```
+
+The named sizes (`fs-xs` → `fs-9xl`) use hand-tuned clamp ranges. Arbitrary px sizes (`font-{n}`) auto-derive a clamp range at 85% mobile floor.
+
+You can inspect or extend the curated scale:
+
+```typescript
+import { fluidFontScale } from "@zee-css/core";
+// { xs: "clamp(0.625rem, 1.5vw, 0.75rem)", sm: "clamp(...)", ... }
 ```
 
 ### Color management
@@ -105,13 +132,49 @@ clearCache();                            // Invalidate after color changes
 const value = resolveColor("blue-500"); // "#3b82f6"
 ```
 
+### Breakpoint management
+
+```typescript
+import { setBreakpoint, addBreakpoint, breakpoints, clearCache } from "@zee-css/core";
+
+// Override a default breakpoint
+setBreakpoint('md', '900px');      // was 768px → now 900px
+setBreakpoint('lg', '1100px');     // was 1024px
+
+// Add a brand-new breakpoint (usable as a variant immediately)
+addBreakpoint('3xl', '1920px');    // 3xl:pa-8, 3xl:text-h1, etc.
+addBreakpoint('xs', '480px');      // xs:hidden, xs:flex, etc.
+
+// addBreakpoint is a no-op when the name already exists
+addBreakpoint('md', '999px');      // ignored — use setBreakpoint to override
+
+// Always clear the cache after any breakpoint change
+clearCache();
+
+// Inspect current breakpoints
+console.log(breakpoints);
+// { sm: '640px', md: '900px', lg: '1100px', xl: '1280px', '2xl': '1536px', '3xl': '1920px', xs: '480px' }
+```
+
+Generated CSS respects the updated values immediately:
+
+```typescript
+generateCSSForClass('md:pa-4');
+// @media (min-width: 900px) { .md\:pa-4 { padding: 1rem; } }
+
+generateCSSForClass('3xl:fs-xl');
+// @media (min-width: 1920px) { .3xl\:fs-xl { font-size: 1.25rem; } }
+```
+
 ### Scales & breakpoints
 
 ```typescript
 import {
-  spacingScale, colorScale, fontSizeScale, fontWeightScale,
-  blurScale, shadowScale, borderRadiusScale,
-  breakpoints, stateVariants,
+  spacingScale, colorScale,
+  fontSizeScale, fluidFontScale,       // fluidFontScale: clamp() equivalents for autoResponsive
+  fontWeightScale, blurScale, shadowScale, borderRadiusScale,
+  breakpoints, setBreakpoint, addBreakpoint,  // breakpoint management
+  stateVariants,
   resolveSpacing, resolveSizing,
 } from "@zee-css/core";
 ```

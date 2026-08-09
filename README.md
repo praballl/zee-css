@@ -13,6 +13,7 @@ A high-performance, TypeScript-based utility CSS framework — Tailwind-compatib
 - **Full Tailwind color palette** — 22 color families × 11 shades = 242 colors (slate, gray, red, blue, green, purple, etc.)
 - **CSS Grid** — `grid-cols-*`, `col-span-*`, `row-span-*`, `grid-flow-*`, `auto-cols-*`
 - **Gradients** — `bg-gradient-to-{direction}` + `from-{color}` + `via-{color}` + `to-{color}`
+- **Auto-responsive typography** — `autoResponsive: true` replaces all font sizes with fluid `clamp()` values that scale smoothly from mobile to desktop — no manual breakpoints needed
 - **Dark mode** — `dark:` variant (media-query or class-based)
 - **Animations** — `animate-spin`, `animate-ping`, `animate-pulse`, `animate-bounce`
 - **Arbitrary values** — `w-[200px]`, `text-[#ff0000]`, `p-[13px]`
@@ -25,7 +26,7 @@ A high-performance, TypeScript-based utility CSS framework — Tailwind-compatib
 - **RTL / Logical properties** — `ps-*`, `pe-*`, `ms-*`, `me-*`, `start-*`, `end-*`
 - **SVG utilities** — `fill-{color}`, `stroke-{color}`, `stroke-{0-2}`
 - **Per-class important** — `!pa-4` adds `!important` to one class
-- **Responsive** — `sm:`, `md:`, `lg:`, `xl:`, `2xl:` mobile-first breakpoints
+- **Responsive** — `sm:`, `md:`, `lg:`, `xl:`, `2xl:` mobile-first breakpoints — fully customizable via `setBreakpoint` / `addBreakpoint`
 - **State variants** — `hover:`, `focus:`, `active:`, `disabled:`, `first:`, `last:`, `odd:`, `even:`, `placeholder:`
 - **Tree-shaken output** — CLI scans your source files and only generates CSS for classes you use
 - **O(1) caching** — memoized generator for fast repeated builds
@@ -362,6 +363,24 @@ Theme colors via CSS variables:
 <div class="text-body2 md:text-body1 lg:text-h6">
 ```
 
+#### Auto-responsive typography
+
+Pass `autoResponsive: true` to the generator and every `font-size` declaration is automatically replaced with a fluid `clamp()` value — no breakpoints needed.
+
+```typescript
+generateCSS(classNames, { autoResponsive: true });
+```
+
+| Class | Without `autoResponsive` | With `autoResponsive` |
+|-------|--------------------------|----------------------|
+| `fs-sm` | `font-size: 0.875rem` | `font-size: clamp(0.75rem, 1.75vw, 0.875rem)` |
+| `fs-base` | `font-size: 1rem` | `font-size: clamp(0.875rem, 2vw, 1rem)` |
+| `fs-2xl` | `font-size: 1.5rem` | `font-size: clamp(1.25rem, 3vw, 1.5rem)` |
+| `text-h2` | `font-size: 3.75rem` | `font-size: clamp(2.75rem, 7.5vw, 3.75rem)` |
+| `font-14` | `font-size: 0.875rem` | `font-size: clamp(0.75rem, 1.75vw, 0.875rem)` |
+
+Works with all font-size syntaxes: `fs-{scale}`, `font-{px}`, and Material Design headings (`text-h1`–`text-h6`).
+
 #### State
 
 ```html
@@ -403,8 +422,27 @@ Theme colors via CSS variables:
 ## Programmatic API
 
 ```typescript
-import { generateCSS, generateCSSForClass, addColor, setColor, clearCache } from "@zee-css/core";
+import {
+  generateCSS, generateCSSForClass,
+  addColor, setColor,
+  setBreakpoint, addBreakpoint,
+  clearCache,
+} from "@zee-css/core";
 
+// ── Breakpoints ──────────────────────────────
+// Override an existing breakpoint
+setBreakpoint('md', '900px');      // was 768px
+
+// Add a brand-new breakpoint
+addBreakpoint('3xl', '1920px');    // now usable as 3xl:pa-8
+
+// addBreakpoint is a no-op if the name already exists — use setBreakpoint to override
+addBreakpoint('md', '999px');      // ignored, md stays 900px
+
+// Always clear the cache after changing breakpoints
+clearCache();
+
+// ── Colors ───────────────────────────────────
 // Add custom colors
 addColor("brand", "#6366f1");
 addColor("brand-dark", "#4f46e5");
@@ -440,6 +478,7 @@ npx zee-css [directory] [options]
 | `--minify` | `-m` | Minified single-line output | `false` |
 | `--important` | | Add `!important` to all rules | `false` |
 | `--prefix <p>` | | Namespace class selectors (e.g. `z-`) | `""` |
+| `--auto-responsive` | | Fluid `clamp()` font sizes on all breakpoints | `false` |
 | `--help` | `-h` | Show help | |
 | `--version` | `-v` | Show version | |
 

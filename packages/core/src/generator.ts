@@ -1,4 +1,4 @@
-import { rules, breakpoints, stateVariants } from "./rules/index";
+import { rules, breakpoints, stateVariants, fluidFontScale } from "./rules/index";
 import type { CSSDeclaration, Rule } from "./rules/types";
 
 export interface GeneratedRule {
@@ -16,6 +16,13 @@ export interface GeneratorOptions {
   minify?: boolean;
   /** Dark mode strategy: 'media' (prefers-color-scheme) or 'class' (.dark ancestor) */
   darkMode?: "media" | "class";
+  /**
+   * Auto-responsive font sizes (default: false).
+   * When true, all font-size declarations are replaced with CSS clamp() values
+   * that scale smoothly from a mobile floor up to the desktop target size.
+   * Example: fs-sm → clamp(0.75rem, 1.75vw, 0.875rem)
+   */
+  autoResponsive?: boolean;
 }
 
 // ──────────────────────────────────────────────
@@ -26,6 +33,37 @@ const classCache = new Map<string, GeneratedRule | null>();
 /** Clear the internal generation cache (useful after addColor/setColor calls) */
 export function clearCache(): void {
   classCache.clear();
+}
+
+// ──────────────────────────────────────────────
+// Auto-responsive fluid font helper
+// ──────────────────────────────────────────────
+
+/**
+ * Derives a CSS clamp() value from any rem font-size string.
+ * mobile floor = 85% of target, fluid mid = rem × 2 in vw, cap = original.
+ * Used as fallback for arbitrary px sizes (font-14) when autoResponsive is on.
+ */
+function computeClamp(remVal: string): string {
+  const rem = parseFloat(remVal);
+  if (isNaN(rem) || rem <= 0) return remVal;
+  const min = parseFloat((rem * 0.85).toFixed(4));
+  const vw  = parseFloat((rem * 2).toFixed(2));
+  return `clamp(${min}rem, ${vw}vw, ${remVal})`;
+}
+
+/**
+ * Replace a fixed font-size rem value with a fluid clamp() equivalent.
+ * Curated entries from fluidFontScale are matched by their cap value
+ * (e.g. "1rem" → the base clamp entry); arbitrary values fall back to
+ * computeClamp() for an auto-derived range.
+ */
+function applyFluidFontSize(rawFontSize: string): string {
+  for (const clampVal of Object.values(fluidFontScale)) {
+    const capMatch = clampVal.match(/,\s*([\d.]+rem)\)$/);
+    if (capMatch && capMatch[1] === rawFontSize) return clampVal;
+  }
+  return computeClamp(rawFontSize);
 }
 
 // ──────────────────────────────────────────────
@@ -181,7 +219,7 @@ export function generateCSSForClass(
   className: string,
   options: GeneratorOptions = {},
 ): GeneratedRule | null {
-  const cacheKey = `${options.important ? "!" : ""}${options.prefix ?? ""}${options.minify ? "m" : ""}${options.darkMode ?? ""}:${className}`;
+  const cacheKey = `${options.important ? "!" : ""}${options.prefix ?? ""}${options.minify ? "m" : ""}${options.darkMode ?? ""}${options.autoResponsive ? "ar" : ""}:${className}`;
   if (classCache.has(cacheKey)) {
     return classCache.get(cacheKey)!;
   }
@@ -218,6 +256,12 @@ export function generateCSSForClass(
   if (!decl) {
     classCache.set(cacheKey, null);
     return null;
+  }
+
+  // Auto-responsive: replace fixed font-size with a fluid clamp() value
+  if (options.autoResponsive && "font-size" in decl) {
+    const rawSize = String(decl["font-size"]);
+    decl = { ...decl, "font-size": applyFluidFontSize(rawSize) };
   }
 
   // Build the selector

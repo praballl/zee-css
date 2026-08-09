@@ -16,7 +16,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </div>
   </header>
 
-  <main class="pa-8 max-w-48 mx-auto">
+  <main class="pa-8 mx-auto">
 
     <!-- ── SECTION 1: COLOR PALETTE ── -->
     <section class="section">

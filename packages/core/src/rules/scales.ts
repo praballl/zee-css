@@ -117,6 +117,24 @@ export const fontSizeScale: Record<string, string> = {
   "9xl": "8rem",
 };
 
+// Fluid font scale: clamp(mobile-floor, fluid-mid, desktop-cap)
+// Used when autoResponsive: true — sizes scale smoothly with viewport width.
+export const fluidFontScale: Record<string, string> = {
+  "xs":   "clamp(0.625rem, 1.5vw, 0.75rem)",
+  "sm":   "clamp(0.75rem, 1.75vw, 0.875rem)",
+  "base": "clamp(0.875rem, 2vw, 1rem)",
+  "lg":   "clamp(1rem, 2.25vw, 1.125rem)",
+  "xl":   "clamp(1.0625rem, 2.5vw, 1.25rem)",
+  "2xl":  "clamp(1.25rem, 3vw, 1.5rem)",
+  "3xl":  "clamp(1.5rem, 3.75vw, 1.875rem)",
+  "4xl":  "clamp(1.75rem, 4.5vw, 2.25rem)",
+  "5xl":  "clamp(2.25rem, 6vw, 3rem)",
+  "6xl":  "clamp(2.75rem, 7.5vw, 3.75rem)",
+  "7xl":  "clamp(3.25rem, 9vw, 4.5rem)",
+  "8xl":  "clamp(4rem, 12vw, 6rem)",
+  "9xl":  "clamp(5rem, 16vw, 8rem)",
+};
+
 export const fontWeightScale: Record<string, string> = {
   "thin": "100",
   "extralight": "200",
@@ -215,6 +233,33 @@ export const breakpoints: Record<string, string> = {
   "xl": "1280px",
   "2xl": "1536px",
 };
+
+/**
+ * Override an existing breakpoint or add a new one.
+ * Call clearCache() after to invalidate stale generated CSS.
+ *
+ * @example
+ * setBreakpoint('md', '900px');      // override
+ * setBreakpoint('3xl', '1920px');    // add custom
+ * clearCache();
+ */
+export function setBreakpoint(name: string, value: string): void {
+  breakpoints[name] = value;
+}
+
+/**
+ * Add a new breakpoint. No-op if the name already exists (use setBreakpoint to override).
+ * Call clearCache() after to invalidate stale generated CSS.
+ *
+ * @example
+ * addBreakpoint('3xl', '1920px');
+ * clearCache();
+ */
+export function addBreakpoint(name: string, value: string): void {
+  if (!(name in breakpoints)) {
+    breakpoints[name] = value;
+  }
+}
 
 // ──────────────────────────────────────────────
 // State variants
