@@ -11,7 +11,14 @@
       "Bash(npm whoami:*)",
       "Bash(npm publish:*)",
       "Bash(node -e ':*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cd packages/core && cat package.json && echo \"=== CLI ===\" && cat ../cli/package.json && echo \"=== RULE COUNT ===\" && grep -c \"name:\" src/rules/*.ts && echo \"=== TESTS ===\" && grep -c \"it\\(\\\\|test\\(\" src/__tests__/rules.test.ts)",
+      "Read(//c/Users/praba/OneDrive/Desktop/cli/**)",
+      "Bash(npx tsc *)",
+      "Bash(node -e ' *)",
+      "Bash(npm test *)",
+      "Bash(npm run *)",
+      "Bash(npm view *)"
     ]
   }
 }
