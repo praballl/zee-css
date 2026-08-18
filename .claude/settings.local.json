@@ -18,7 +18,12 @@
       "Bash(node -e ' *)",
       "Bash(npm test *)",
       "Bash(npm run *)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(npm whoami *)",
+      "Bash(npm publish *)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(rm -f tsconfig.tsbuildinfo)",
+      "Bash(npx @zee-css/cli --help)"
     ]
   }
 }
