@@ -389,3 +389,143 @@ describe("generateCSS (batch)", () => {
     expect(css).toContain("@media (min-width: 1024px)");
   });
 });
+
+// ──────────────────────────────────────────────
+// Regression tests for the 1.1.0 fixes
+// ──────────────────────────────────────────────
+describe("selector escaping (1.1.0)", () => {
+  it("escapes # in an arbitrary hex value", () => {
+    clearCache();
+    const r = generateCSSForClass("bg-[#14b8a6]");
+    expect(r?.css).toContain(".bg-\\[\\#14b8a6\\]");
+    expect(r?.css).toContain("background-color: #14b8a6");
+  });
+
+  it("escapes % in an arbitrary hsl value", () => {
+    clearCache();
+    expect(generateCSSForClass("bg-[hsl(174,80%,40%)]")?.css)
+      .toContain(".bg-\\[hsl\\(174\\,80\\%\\,40\\%\\)\\]");
+  });
+
+  it("writes a leading digit as a numeric code-point escape", () => {
+    clearCache();
+    const css = generateCSSForClass("2xl:pa-8")?.css ?? "";
+    expect(css).toContain(".\\32 xl\\:pa-8");
+    expect(css).not.toContain(".2xl");
+  });
+
+  it("still escapes the characters 1.0.0 handled", () => {
+    clearCache();
+    expect(generateCSSForClass("md:pa-8")?.css).toContain(".md\\:pa-8");
+    expect(generateCSSForClass("pa-0.5")?.css).toContain(".pa-0\\.5");
+    expect(generateCSSForClass("w-1/2")?.css).toContain(".w-1\\/2");
+    expect(generateCSSForClass("!pa-4")?.css).toContain(".\\!pa-4");
+    expect(generateCSSForClass("-mt-4")?.css).toContain(".-mt-4");
+  });
+});
+
+describe("flex direction aliases (1.1.0)", () => {
+  it("flex-col sets only the direction", () => {
+    clearCache();
+    expect(getDecl("flex-col")).toEqual({ "flex-direction": "column" });
+    expect(getDecl("flex-row")).toEqual({ "flex-direction": "row" });
+  });
+
+  it("reverse variants work", () => {
+    clearCache();
+    expect(getDecl("flex-col-reverse")).toEqual({ "flex-direction": "column-reverse" });
+    expect(getDecl("flex-row-reverse")).toEqual({ "flex-direction": "row-reverse" });
+  });
+
+  it("does not disturb row / column, which also set display", () => {
+    clearCache();
+    expect(getDecl("column")).toEqual({ display: "flex", "flex-direction": "column" });
+    expect(getDecl("flex-1")).toEqual({ flex: "1" });
+    expect(getDecl("flex-none")).toEqual({ flex: "none" });
+  });
+});
+
+describe("named min/max size scale (1.1.0)", () => {
+  it("resolves named steps on max-w", () => {
+    clearCache();
+    expect(getDecl("max-w-lg")).toEqual({ "max-width": "32rem" });
+    expect(getDecl("max-w-prose")).toEqual({ "max-width": "65ch" });
+    expect(getDecl("max-w-none")).toEqual({ "max-width": "none" });
+  });
+
+  it("applies to min-w, min-h and max-h too", () => {
+    clearCache();
+    expect(getDecl("min-w-lg")).toEqual({ "min-width": "32rem" });
+    expect(getDecl("max-h-2xl")).toEqual({ "max-height": "42rem" });
+  });
+
+  it("keeps named steps out of w- and h-", () => {
+    clearCache();
+    expect(generateCSSForClass("w-lg")).toBe(null);
+    expect(generateCSSForClass("h-lg")).toBe(null);
+  });
+
+  it("still resolves the numeric and keyword scale", () => {
+    clearCache();
+    expect(getDecl("max-w-96")).toEqual({ "max-width": "24rem" });
+    expect(getDecl("max-w-full")).toEqual({ "max-width": "100%" });
+  });
+});
+
+describe("height fractions (1.1.0)", () => {
+  it("accepts fractions on the block axis", () => {
+    clearCache();
+    expect(getDecl("h-1/2")).toEqual({ height: "50%" });
+    expect(getDecl("h-2/3")).toEqual({ height: "66.666667%" });
+  });
+
+  it("leaves the width axis alone", () => {
+    clearCache();
+    expect(getDecl("w-1/2")).toEqual({ width: "50%" });
+    expect(getDecl("h-screen")).toEqual({ height: "100vh" });
+  });
+});
+
+describe("per-side border widths (1.1.0)", () => {
+  it("sets a single side", () => {
+    clearCache();
+    expect(getDecl("border-l-4")).toEqual({
+      "border-left-width": "4px",
+      "border-left-style": "solid",
+    });
+  });
+
+  it("supports logical sides", () => {
+    clearCache();
+    expect(getDecl("border-s-4")).toEqual({
+      "border-inline-start-width": "4px",
+      "border-inline-start-style": "solid",
+    });
+  });
+
+  it("supports the axis pairs, with and without a width", () => {
+    clearCache();
+    expect(getDecl("border-x")).toEqual({
+      "border-left-width": "1px",
+      "border-right-width": "1px",
+      "border-left-style": "solid",
+      "border-right-style": "solid",
+    });
+    expect(getDecl("border-y-4")).toEqual({
+      "border-top-width": "4px",
+      "border-bottom-width": "4px",
+      "border-top-style": "solid",
+      "border-bottom-style": "solid",
+    });
+  });
+
+  it("does not shadow border colors or styles", () => {
+    clearCache();
+    expect(getDecl("border-slate-300")).toEqual({ "border-color": "#cbd5e1" });
+    expect(getDecl("border-dashed")).toEqual({ "border-style": "dashed" });
+    expect(getDecl("border-l")).toEqual({
+      "border-left-width": "1px",
+      "border-left-style": "solid",
+    });
+  });
+});

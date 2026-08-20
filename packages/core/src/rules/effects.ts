@@ -209,6 +209,31 @@ export const effectsRules: Rule[] = [
   { name: "border-e", pattern: /^border-e$/, handler: () => {
     return { "border-inline-end-width": "1px", "border-inline-end-style": "solid" };
   }},
+
+  // Per-side widths. Must sit before border-color, whose [\w-]+ pattern would
+  // otherwise swallow border-l-4 and try to resolve "l-4" as a color.
+  { name: "border-side-width", pattern: /^border-(t|b|l|r)-(0|2|4|8)$/, handler: (m) => {
+    const side = { t: "top", b: "bottom", l: "left", r: "right" }[m[1]]!;
+    return { [`border-${side}-width`]: `${m[2]}px`, [`border-${side}-style`]: "solid" };
+  }},
+  { name: "border-logical-side-width", pattern: /^border-(s|e)-(0|2|4|8)$/, handler: (m) => {
+    const side = m[1] === "s" ? "inline-start" : "inline-end";
+    return { [`border-${side}-width`]: `${m[2]}px`, [`border-${side}-style`]: "solid" };
+  }},
+  { name: "border-x-width", pattern: /^border-x(?:-(0|2|4|8))?$/, handler: (m) => {
+    const w = m[1] ?? "1";
+    return {
+      "border-left-width": `${w}px`, "border-right-width": `${w}px`,
+      "border-left-style": "solid", "border-right-style": "solid",
+    };
+  }},
+  { name: "border-y-width", pattern: /^border-y(?:-(0|2|4|8))?$/, handler: (m) => {
+    const w = m[1] ?? "1";
+    return {
+      "border-top-width": `${w}px`, "border-bottom-width": `${w}px`,
+      "border-top-style": "solid", "border-bottom-style": "solid",
+    };
+  }},
   { name: "border-none", pattern: /^border-none$/, handler: () => {
     return { "border-style": "none" };
   }},

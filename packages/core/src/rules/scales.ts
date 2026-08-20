@@ -58,13 +58,7 @@ export function resolveSpacing(key: string): string | null {
 // ──────────────────────────────────────────────
 // Sizing scale (extends spacing with keywords)
 // ──────────────────────────────────────────────
-const sizingKeywords: Record<string, string> = {
-  "auto": "auto",
-  "full": "100%",
-  "screen": "100vw",
-  "min": "min-content",
-  "max": "max-content",
-  "fit": "fit-content",
+const sizingFractions: Record<string, string> = {
   "1/2": "50%",
   "1/3": "33.333333%",
   "2/3": "66.666667%",
@@ -79,6 +73,17 @@ const sizingKeywords: Record<string, string> = {
   "5/6": "83.333333%",
 };
 
+const sizingKeywords: Record<string, string> = {
+  "auto": "auto",
+  "full": "100%",
+  "screen": "100vw",
+  "min": "min-content",
+  "max": "max-content",
+  "fit": "fit-content",
+  ...sizingFractions,
+};
+
+
 const sizingScreenHeight: Record<string, string> = {
   "auto": "auto",
   "full": "100%",
@@ -89,6 +94,30 @@ const sizingScreenHeight: Record<string, string> = {
   "min": "min-content",
   "max": "max-content",
   "fit": "fit-content",
+  // Fractions work on the block axis too -- h-1/2 used to return null while
+  // w-1/2 worked, purely because the height pattern excluded the slash.
+  ...sizingFractions,
+};
+
+/**
+ * Named steps for min-width / max-width / max-height only.
+ * These are deliberately not in the general sizing scale: `max-w-lg` is a
+ * common measure, `w-lg` is not a meaningful width.
+ */
+export const maxSizeScale: Record<string, string> = {
+  "none": "none",
+  "xs": "20rem",
+  "sm": "24rem",
+  "md": "28rem",
+  "lg": "32rem",
+  "xl": "36rem",
+  "2xl": "42rem",
+  "3xl": "48rem",
+  "4xl": "56rem",
+  "5xl": "64rem",
+  "6xl": "72rem",
+  "7xl": "80rem",
+  "prose": "65ch",
 };
 
 export function resolveSizing(key: string, dimension: "width" | "height" = "width"): string | null {
@@ -96,6 +125,11 @@ export function resolveSizing(key: string, dimension: "width" | "height" = "widt
     return spacingScale[key] ?? sizingScreenHeight[key] ?? null;
   }
   return spacingScale[key] ?? sizingKeywords[key] ?? null;
+}
+
+/** Resolve a min-/max- size, which additionally accepts the named steps. */
+export function resolveMaxSize(key: string, dimension: "width" | "height" = "width"): string | null {
+  return resolveSizing(key, dimension) ?? maxSizeScale[key] ?? null;
 }
 
 // ──────────────────────────────────────────────

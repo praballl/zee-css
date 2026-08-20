@@ -5,7 +5,7 @@ import path from "path";
 import { generateCSS } from "@zee-css/core";
 import type { GeneratorOptions } from "@zee-css/core";
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 const PACKAGE_NAME = "zee-css";
 
 // ──────────────────────────────────────────────
@@ -46,7 +46,61 @@ function logError(msg: string): void {
 // ──────────────────────────────────────────────
 // File scanning
 // ──────────────────────────────────────────────
-const DEFAULT_EXTENSIONS = "*.{html,htm,jsx,tsx,vue,svelte,astro,ts,js,mdx,php,erb}";
+const DEFAULT_EXTENSIONS = "*.{html,htm,jsx,tsx,vue,svelte,astro,ts,js,mjs,cjs,mdx,php,erb}";
+
+const WATCHED_EXTENSIONS = [
+  ".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro",
+  ".ts", ".js", ".mjs", ".cjs", ".mdx", ".php", ".erb",
+];
+
+/**
+ * Pull every className attribute *value* out of a source file, brace-balanced.
+ *
+ * The naive `class(?:Name)?="([^"]+)"` regex misses anything written as an
+ * expression, which in a React codebase is most conditional styling:
+ *
+ *   className={active ? "border-indigo-500" : "border-transparent"}
+ *   className={"rounded-md " + extra}
+ *
+ * Those classes silently never reached the generator. Returning the whole
+ * attribute value lets the caller mine the string literals inside it.
+ */
+function classAttributeValues(src: string): string[] {
+  const out: string[] = [];
+  const re = /class(?:Name)?=/g;
+  let m: RegExpExecArray | null;
+
+  while ((m = re.exec(src)) !== null) {
+    const i = m.index + m[0].length;
+    const ch = src[i];
+
+    if (ch === '"' || ch === "'") {
+      const end = src.indexOf(ch, i + 1);
+      if (end > -1) out.push(src.slice(i + 1, end));
+    } else if (ch === "`") {
+      const end = src.indexOf("`", i + 1);
+      if (end > -1) out.push(src.slice(i + 1, end));
+    } else if (ch === "{") {
+      let depth = 0;
+      let j = i;
+      for (; j < src.length; j++) {
+        if (src[j] === "{") depth++;
+        else if (src[j] === "}" && --depth === 0) break;
+      }
+      out.push(src.slice(i + 1, j));
+    }
+  }
+  return out;
+}
+
+/** Every string literal inside an expression, in source order. */
+function stringLiterals(expr: string): string[] {
+  const out: string[] = [];
+  const re = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(expr)) !== null) out.push(m[1] ?? m[2] ?? m[3] ?? "");
+  return out;
+}
 
 async function scanFiles(patterns: string[]): Promise<Set<string>> {
   const found = new Set<string>();
@@ -55,43 +109,41 @@ async function scanFiles(patterns: string[]): Promise<Set<string>> {
     await Promise.all(
       patterns.map((pattern) =>
         glob(pattern, {
-          ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+          ignore: [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/.git/**",
+            "**/.next/**",
+            "**/build/**",
+            "**/out/**",
+          ],
           windowsPathsNoEscape: true,
         })
       )
     )
   ).flat();
 
-  for (const file of files) {
+  const add = (chunk: string) => {
+    // Drop ${...} interpolations -- their contents are not literal classes.
+    for (const cls of chunk.replace(/\$\{[^}]*\}/g, " ").split(/\s+/)) {
+      if (cls) found.add(cls);
+    }
+  };
+
+  for (const file of new Set(files)) {
     const content = fs.readFileSync(file, "utf-8");
 
-    // Standard class="..." and className="..."
-    const classAttrRegex = /class(?:Name)?=["']([^"']+)["']/g;
-    let match: RegExpExecArray | null;
-    while ((match = classAttrRegex.exec(content)) !== null) {
-      const classList = match[1].split(/\s+/).filter(Boolean);
-      classList.forEach((cls) => found.add(cls));
+    for (const value of classAttributeValues(content)) {
+      // A bare attribute value has no quotes of its own; an expression does.
+      const literals = /["'`]/.test(value) ? stringLiterals(value) : [value];
+      for (const literal of literals) add(literal);
     }
 
-    // Template literals: class={`...`} or className={`...`}
-    const templateLitRegex = /class(?:Name)?=\{`([^`]+)`\}/g;
-    while ((match = templateLitRegex.exec(content)) !== null) {
-      // Extract static class names from template literal (skip ${...} expressions)
-      const cleaned = match[1].replace(/\$\{[^}]*\}/g, " ");
-      const classList = cleaned.split(/\s+/).filter(Boolean);
-      classList.forEach((cls) => found.add(cls));
-    }
-
-    // Vue :class="'...'" or :class="['...']"
+    // Vue :class="'...'" / :class="['...', '...']"
     const vueClassRegex = /:class=["'][^"']*["']/g;
+    let match: RegExpExecArray | null;
     while ((match = vueClassRegex.exec(content)) !== null) {
-      const stringLiterals = match[0].match(/'([^']+)'/g);
-      if (stringLiterals) {
-        for (const str of stringLiterals) {
-          const classes = str.slice(1, -1).split(/\s+/).filter(Boolean);
-          classes.forEach((cls) => found.add(cls));
-        }
-      }
+      for (const str of match[0].match(/'([^']+)'/g) ?? []) add(str.slice(1, -1));
     }
 
     // Svelte class:name directive
@@ -107,42 +159,49 @@ async function scanFiles(patterns: string[]): Promise<Set<string>> {
 // ──────────────────────────────────────────────
 // Watch mode
 // ──────────────────────────────────────────────
+/** The fixed directory prefix of a glob, i.e. everything before the first wildcard. */
+function globRoot(pattern: string): string {
+  const norm = pattern.replace(/\\/g, "/");
+  const wildcard = norm.search(/[*?[{]/);
+  const head = wildcard === -1 ? norm : norm.slice(0, wildcard);
+  const dir = head.endsWith("/") ? head : path.dirname(head);
+  return path.resolve(dir);
+}
+
 async function watchMode(
-  targetDir: string,
   patterns: string[],
   outputPath: string,
   generatorOptions: GeneratorOptions,
 ): Promise<void> {
-  const srcDir = path.resolve(targetDir, "src");
-  if (!fs.existsSync(srcDir)) {
-    logError(`Watch directory not found: ${srcDir}`);
+  // Watch whatever the patterns actually point at, rather than assuming <dir>/src.
+  const roots = [...new Set(patterns.map(globRoot))].filter((d) => fs.existsSync(d));
+
+  if (roots.length === 0) {
+    logError(`Nothing to watch — no directory matched: ${patterns.join(", ")}`);
     process.exit(1);
   }
 
-  logInfo(`Watching ${srcDir} for changes...`);
+  for (const root of roots) logInfo(`Watching ${root} for changes...`);
   logInfo("Press Ctrl+C to stop\n");
 
-  // Initial build
   await buildCSS(patterns, outputPath, generatorOptions);
 
-  // Debounce timer
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  fs.watch(srcDir, { recursive: true }, (_event, filename) => {
-    if (!filename) return;
+  for (const root of roots) {
+    fs.watch(root, { recursive: true }, (_event, filename) => {
+      if (!filename) return;
 
-    // Only react to supported file types
-    const ext = path.extname(filename).toLowerCase();
-    const supportedExts = [".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".ts", ".js", ".mdx"];
-    if (!supportedExts.includes(ext)) return;
+      const ext = path.extname(filename.toString()).toLowerCase();
+      if (!WATCHED_EXTENSIONS.includes(ext)) return;
 
-    // Debounce — wait 100ms after last change
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      logInfo(`Change detected: ${filename}`);
-      await buildCSS(patterns, outputPath, generatorOptions);
-    }, 100);
-  });
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        logInfo(`Change detected: ${filename}`);
+        await buildCSS(patterns, outputPath, generatorOptions);
+      }, 100);
+    });
+  }
 }
 
 async function buildCSS(
@@ -184,8 +243,12 @@ ${color.bold}OPTIONS${color.reset}
   -o, --output <path>    Output file path (default: <directory>/dist/utilities.css)
   -w, --watch            Watch for file changes and rebuild automatically
   -m, --minify           Minify the generated CSS
+  --content <glob>       Glob to scan, relative to <directory>. Repeatable.
+                         Default: <directory>/src if it exists, else <directory>
   --important            Add !important to all declarations
   --prefix <prefix>      Add prefix to all class selectors (e.g., "z-")
+  --auto-responsive      Replace every font-size with a fluid clamp() value
+  --dark-mode <mode>     "media" (default) or "class" (.dark ancestor)
   -h, --help             Show this help message
   -v, --version          Show version number
 
@@ -196,6 +259,10 @@ ${color.bold}EXAMPLES${color.reset}
   ${PACKAGE_NAME} . --watch                ${color.dim}# Watch mode${color.reset}
   ${PACKAGE_NAME} . --minify               ${color.dim}# Minified output${color.reset}
   ${PACKAGE_NAME} . --important            ${color.dim}# Add !important${color.reset}
+  ${PACKAGE_NAME} . --auto-responsive      ${color.dim}# Fluid clamp() font sizes${color.reset}
+  ${PACKAGE_NAME} . --dark-mode class      ${color.dim}# .dark ancestor instead of a media query${color.reset}
+  ${PACKAGE_NAME} . --content "app/**/*.tsx" -o app/zee.css
+                                          ${color.dim}# Next.js app/ router${color.reset}
 
 ${color.bold}SCANNED FILE TYPES${color.reset}
   .html, .htm, .jsx, .tsx, .vue, .svelte, .astro, .ts, .js, .mdx, .php, .erb
@@ -211,20 +278,26 @@ function showVersion(): void {
 function parseArgs(argv: string[]): {
   directory: string;
   output: string | null;
+  content: string[];
   watch: boolean;
   minify: boolean;
   important: boolean;
   prefix: string;
+  autoResponsive: boolean;
+  darkMode: "media" | "class";
   help: boolean;
   version: boolean;
 } {
   const result = {
     directory: process.cwd(),
     output: null as string | null,
+    content: [] as string[],
     watch: false,
     minify: false,
     important: false,
     prefix: "",
+    autoResponsive: false,
+    darkMode: "media" as "media" | "class",
     help: false,
     version: false,
   };
@@ -250,6 +323,21 @@ function parseArgs(argv: string[]): {
         break;
       case "--important":
         result.important = true;
+        break;
+      case "--auto-responsive":
+        result.autoResponsive = true;
+        break;
+      case "--dark-mode": {
+        const mode = argv[++i];
+        if (mode !== "media" && mode !== "class") {
+          logError(`--dark-mode expects "media" or "class", got "${mode ?? ""}"`);
+          process.exit(1);
+        }
+        result.darkMode = mode;
+        break;
+      }
+      case "--content":
+        if (argv[i + 1]) result.content.push(argv[++i]);
         break;
       case "-o":
       case "--output":
@@ -287,19 +375,33 @@ async function run(): Promise<void> {
     ? path.resolve(args.output)
     : path.resolve(targetDir, "dist/utilities.css");
 
-  const patterns = [path.join(targetDir, "src", "**", DEFAULT_EXTENSIONS)];
+  // --content wins. Otherwise scan <dir>/src when it exists, and fall back to
+  // the directory itself — a Next.js app/ or a plain site has no src/, and
+  // hardcoding it meant those projects silently generated an empty stylesheet.
+  let patterns: string[];
+  if (args.content.length) {
+    patterns = args.content.map((c) => path.resolve(targetDir, c));
+  } else if (fs.existsSync(path.join(targetDir, "src"))) {
+    patterns = [path.join(targetDir, "src", "**", DEFAULT_EXTENSIONS)];
+  } else {
+    patterns = [path.join(targetDir, "**", DEFAULT_EXTENSIONS)];
+  }
 
   const generatorOptions: GeneratorOptions = {
     important: args.important,
     prefix: args.prefix || undefined,
     minify: args.minify,
+    autoResponsive: args.autoResponsive,
+    darkMode: args.darkMode,
   };
 
   log(`\n${color.bold}${color.magenta}⚡ ${PACKAGE_NAME}${color.reset} v${VERSION}\n`);
   logInfo(`Scanning ${color.bold}${targetDir}${color.reset}`);
+  if (args.autoResponsive) logInfo("Fluid font sizes enabled (clamp)");
+  if (args.darkMode === "class") logInfo('Dark mode: class strategy (.dark ancestor)');
 
   if (args.watch) {
-    await watchMode(targetDir, patterns, outputPath, generatorOptions);
+    await watchMode(patterns, outputPath, generatorOptions);
   } else {
     await buildCSS(patterns, outputPath, generatorOptions);
     log("");

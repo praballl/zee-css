@@ -69,8 +69,47 @@ function applyFluidFontSize(rawFontSize: string): string {
 // ──────────────────────────────────────────────
 // CSS string builders
 // ──────────────────────────────────────────────
+/**
+ * Escape a class name for use in a CSS selector.
+ *
+ * Follows the same rules as CSS.escape: everything outside [A-Za-z0-9_-] and
+ * the non-ASCII range is backslash-escaped, and a leading digit (or a digit
+ * directly after a leading hyphen) is written as a numeric code-point escape,
+ * because an identifier may not begin with an unescaped digit.
+ *
+ * Getting this wrong is not cosmetic. `bg-[#14b8a6]` used to emit
+ * `.bg-\[#14b8a6\]`, where the unescaped `#` opens a hash token -- Turbopack
+ * fails the build and other parsers drop the rule silently. `2xl:pa-8` had the
+ * same problem via its leading digit.
+ */
 function escapeClassName(className: string): string {
-  return className.replace(/[:.\/\[\]\(\),!]/g, "\\$&");
+  let out = "";
+  for (let i = 0; i < className.length; i++) {
+    const ch = className[i]!;
+    const code = className.charCodeAt(i);
+
+    // Leading digit, or digit right after a leading hyphen -> \3N escape.
+    if (ch >= "0" && ch <= "9" && (i === 0 || (i === 1 && className[0] === "-"))) {
+      out += "\\" + code.toString(16) + " ";
+      continue;
+    }
+
+    // A lone "-" is not a valid identifier on its own.
+    if (ch === "-" && className.length === 1) {
+      out += "\\-";
+      continue;
+    }
+
+    // Safe as-is: ASCII word characters, hyphen, and anything non-ASCII.
+    if (code >= 0x80 || (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z") ||
+        (ch >= "0" && ch <= "9") || ch === "_" || ch === "-") {
+      out += ch;
+      continue;
+    }
+
+    out += "\\" + ch;
+  }
+  return out;
 }
 
 function toCSSString(

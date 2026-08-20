@@ -1,5 +1,5 @@
 import { Rule } from "./types";
-import { resolveSpacing, resolveSizing, SP, SP_AUTO } from "./scales";
+import { resolveSpacing, resolveSizing, SP, SP_AUTO, resolveMaxSize } from "./scales";
 
 export const layoutRules: Rule[] = [
   // ───── Display ─────
@@ -45,26 +45,26 @@ export const layoutRules: Rule[] = [
     const v = resolveSizing(m[1], "width"); if (!v) return null;
     return { width: v };
   }},
-  { name: "min-width", pattern: /^min-w-([\w.]+)$/, handler: (m) => {
-    const v = resolveSizing(m[1], "width"); if (!v) return null;
+  { name: "min-width", pattern: /^min-w-([\w./]+)$/, handler: (m) => {
+    const v = resolveMaxSize(m[1], "width"); if (!v) return null;
     return { "min-width": v };
   }},
-  { name: "max-width", pattern: /^max-w-([\w.]+)$/, handler: (m) => {
-    const v = resolveSizing(m[1], "width"); if (!v) return null;
+  { name: "max-width", pattern: /^max-w-([\w./]+)$/, handler: (m) => {
+    const v = resolveMaxSize(m[1], "width"); if (!v) return null;
     return { "max-width": v };
   }},
 
   // ───── Height ─────
-  { name: "height", pattern: /^h-([\w.]+)$/, handler: (m) => {
+  { name: "height", pattern: /^h-([\w./]+)$/, handler: (m) => {
     const v = resolveSizing(m[1], "height"); if (!v) return null;
     return { height: v };
   }},
-  { name: "min-height", pattern: /^min-h-([\w.]+)$/, handler: (m) => {
-    const v = resolveSizing(m[1], "height"); if (!v) return null;
+  { name: "min-height", pattern: /^min-h-([\w./]+)$/, handler: (m) => {
+    const v = resolveMaxSize(m[1], "height"); if (!v) return null;
     return { "min-height": v };
   }},
-  { name: "max-height", pattern: /^max-h-([\w.]+)$/, handler: (m) => {
-    const v = resolveSizing(m[1], "height"); if (!v) return null;
+  { name: "max-height", pattern: /^max-h-([\w./]+)$/, handler: (m) => {
+    const v = resolveMaxSize(m[1], "height"); if (!v) return null;
     return { "max-height": v };
   }},
 

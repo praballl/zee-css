@@ -27,6 +27,7 @@ A high-performance, TypeScript-based utility CSS framework — Tailwind-compatib
 - **SVG utilities** — `fill-{color}`, `stroke-{color}`, `stroke-{0-2}`
 - **Per-class important** — `!pa-4` adds `!important` to one class
 - **Responsive** — `sm:`, `md:`, `lg:`, `xl:`, `2xl:` mobile-first breakpoints — fully customizable via `setBreakpoint` / `addBreakpoint`
+- **Correct selector escaping** — arbitrary values with `#` or `%`, and breakpoints starting with a digit, produce valid CSS
 - **State variants** — `hover:`, `focus:`, `active:`, `disabled:`, `first:`, `last:`, `odd:`, `even:`, `placeholder:`
 - **Tree-shaken output** — CLI scans your source files and only generates CSS for classes you use
 - **O(1) caching** — memoized generator for fast repeated builds
@@ -152,13 +153,15 @@ Spacing scale: `0`, `px`, `0.5`, `1`…`96` (rem-based, 4px baseline) + named `x
 |-------|-----|
 | `flex`, `grid`, `block`, `hidden`, `inline`, `inline-flex`, `contents` | `display` |
 | `row`, `column`, `row-reverse`, `column-reverse` | `display:flex` + direction |
+| `flex-row`, `flex-col`, `flex-row-reverse`, `flex-col-reverse` | `flex-direction` only (Tailwind-compatible) |
 | `items-center`, `justify-between`, `self-end` | flex/grid alignment |
 | `container` | `width:100%; margin:0 auto` |
 | `relative`, `absolute`, `fixed`, `sticky`, `static` | position |
 | `top-4`, `right-4`, `bottom-4`, `left-4`, `inset-4` | inset |
 | `z-10`, `z-20`…`z-50`, `z-auto` | z-index |
 | `w-full`, `w-auto`, `w-screen`, `w-1/2`, `w-[200px]` | width |
-| `h-full`, `h-screen`, `h-[60px]` | height |
+| `h-full`, `h-screen`, `h-1/2`, `h-[60px]` | height |
+| `max-w-xs` … `max-w-7xl`, `max-w-prose`, `max-w-none` | named min/max scale (also `min-w-`, `min-h-`, `max-h-`) |
 | `overflow-hidden`, `overflow-x-auto`, `overflow-y-scroll` | overflow |
 | `float-left`, `float-right`, `float-none` | float |
 | `table`, `table-row`, `table-cell` | table display |
@@ -306,6 +309,7 @@ Theme colors via CSS variables:
 <div class="border border-slate-300 rounded-xl">
 <div class="border-2 border-dashed border-blue-400">
 <div class="border-t border-b border-slate-200">
+<div class="border-l-4 border-t-2 border-x border-y-4">   <!-- per-side widths -->
 <div class="border-s-4 border-indigo-500">   <!-- inline-start -->
 <div class="rounded-full rounded-xl rounded-lg">
 
@@ -478,11 +482,32 @@ npx zee-css [directory] [options]
 | `--minify` | `-m` | Minified single-line output | `false` |
 | `--important` | | Add `!important` to all rules | `false` |
 | `--prefix <p>` | | Namespace class selectors (e.g. `z-`) | `""` |
-| `--auto-responsive` | | Fluid `clamp()` font sizes on all breakpoints | `false` |
+| `--auto-responsive` | | Fluid `clamp()` font sizes | `false` |
+| `--dark-mode <mode>` | | `media` (default) or `class` (`.dark` ancestor) | `media` |
+| `--content <glob>` | | Glob to scan, relative to `[directory]`. Repeatable. | see below |
 | `--help` | `-h` | Show help | |
 | `--version` | `-v` | Show version | |
 
-Scanned file extensions: `.html`, `.htm`, `.jsx`, `.tsx`, `.vue`, `.svelte`, `.astro`, `.ts`, `.js`, `.mdx`, `.php`, `.erb`
+Scanned file extensions: `.html`, `.htm`, `.jsx`, `.tsx`, `.vue`, `.svelte`, `.astro`, `.ts`, `.js`, `.mjs`, `.cjs`, `.mdx`, `.php`, `.erb`
+
+With no `--content`, the CLI scans `[directory]/src` when that folder exists and
+falls back to `[directory]` otherwise. Point it somewhere else explicitly when
+your markup lives elsewhere:
+
+```bash
+# Next.js App Router with no src/ folder
+npx zee-css . --content "app/**/*.{tsx,mdx}" -o app/zee.css
+
+# Several roots
+npx zee-css . --content "app/**/*.tsx" --content "components/**/*.tsx"
+```
+
+The scanner reads the whole `className` attribute, including expressions, so
+conditional class names are picked up:
+
+```jsx
+className={active ? "border-indigo-500" : "border-transparent"}
+```
 
 ---
 

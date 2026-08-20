@@ -1,6 +1,6 @@
 {
   "name": "@zee-css/cli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "CLI tool for zee-css — scans your project and generates CSS from utility class usage with watch mode, minification, and responsive variant support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -60,7 +60,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@zee-css/core": "^1.0.0",
+    "@zee-css/core": "^1.1.0",
     "glob": "^13.0.6"
   }
 }

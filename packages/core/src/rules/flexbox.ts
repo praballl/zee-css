@@ -16,6 +16,17 @@ export const flexboxRules: Rule[] = [
   { name: "flex-nowrap", pattern: /^flex-nowrap$/, handler: () => ({ "flex-wrap": "nowrap" }) },
   { name: "flex-wrap-reverse", pattern: /^flex-wrap-reverse$/, handler: () => ({ "flex-wrap": "wrap-reverse" }) },
 
+  // ───── Tailwind-compatible direction aliases ─────
+  // `row`/`column` above also set display:flex. These set only the direction,
+  // matching Tailwind, so `flex flex-col` behaves the way people expect when
+  // they paste markup in from a Tailwind project.
+  { name: "flex-direction-alias", pattern: /^flex-(row|col)$/, handler: (m) => {
+    return { "flex-direction": m[1] === "col" ? "column" : "row" };
+  }},
+  { name: "flex-direction-alias-reverse", pattern: /^flex-(row|col)-reverse$/, handler: (m) => {
+    return { "flex-direction": m[1] === "col" ? "column-reverse" : "row-reverse" };
+  }},
+
   // Flex grow/shrink/basis shorthand
   { name: "flex-n", pattern: /^flex-(\d)$/, handler: (m) => ({ flex: m[1] }) },
   { name: "flex-auto", pattern: /^flex-auto$/, handler: () => ({ flex: "1 1 auto" }) },
